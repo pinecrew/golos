@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL2/SDL.h>
+#include <cmath>
 
 enum COLOR {
     COLOR_WHITE     = 0xffffff,
