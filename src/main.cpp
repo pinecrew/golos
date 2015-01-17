@@ -4,7 +4,7 @@
 
 const char * game_name = "Game Of Life On Surface";
 int screen_width = 640;
-int screen_height = 480;
+int screen_height = 640;
 bool quit_flag = false;
 SDL_Window * window = NULL;
 SDL_Renderer * render = NULL;
@@ -46,10 +46,11 @@ void draw_point( int x, int y, int size ) {
 void game_render( void ) {
     SDL_RenderClear( render );
     set_coloru( COLOR_WHITE );
-    draw_point( 150, 80, 10 );
-    draw_point( 240, 80, 10 );
-    draw_ellipse_part( 100, 100, 50, 40, false );
-    draw_ellipse_part( 200, 100, 50, 40, false );
+    for ( int size = 0; size < 200; size += 10 ) {
+        draw_ellipse( 100, 300 - size + 20, 200, size );
+        draw_ellipse( 120, 300 - size, 200, size, M_PI / 2.0f );
+    }
+    draw_ellipse( 100, 120, 200, 200 );
     set_coloru( COLOR_BLACK );
     SDL_RenderPresent( render );
 }
