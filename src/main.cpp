@@ -46,11 +46,10 @@ void draw_point( int x, int y, int size ) {
 void game_render( void ) {
     SDL_RenderClear( render );
     set_coloru( COLOR_WHITE );
-    for ( int size = 0; size < 200; size += 10 ) {
+    for ( int size = 0; size <= 192; size += 16 ) {
         draw_ellipse( 100, 300 - size + 20, 200, size );
         draw_ellipse( 120, 300 - size, 200, size, M_PI / 2.0f );
     }
-    draw_ellipse( 100, 120, 200, 200 );
     set_coloru( COLOR_BLACK );
     SDL_RenderPresent( render );
 }
