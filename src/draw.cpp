@@ -32,56 +32,24 @@ void set_color4u( Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha ) {
 
 /* рисуем эллипс с центром в точке (x, y) с полуосями a и b */
 void draw_ellipse( int x, int y, int a, int b ) {
-    unsigned segments = 65;
-    float dt = 2.0 * M_PI / (float) ( segments - 1 );
-    SDL_Point pos[segments];
-    float t = 0, xp, yp;
+    const unsigned segments = 64;
+    const float dt = 2.0 * M_PI / segments;
+    SDL_Point pos[segments + 2];
 
     if ( b != 0 ) {
-        for ( Uint8 i = 0; i < segments; i++ ) {
-            xp = x + cos( t ) * a;
-            yp = y + sin( t ) * b;
-            pos[i].x = ceil( xp );
-            pos[i].y = ceil( yp );
-            t += dt;
+        int i = 0;
+        for ( float t = 0.0; t < dt * ( segments + 2 ); t += dt ) {
+            pos[i].x = x + round( cos( t ) * a );
+            pos[i].y = y + round( sin( t ) * b );
+            i++;
         }
-        SDL_RenderDrawLines( _render, pos, segments );
+        SDL_RenderDrawLines( _render, pos, i );
     } else {
         int x1, y1, x2, y2;
         x1 = x - a;
         y1 = y - b;
         x2 = x + a;
         y2 = y + b;
-        SDL_RenderDrawLine( _render, x1, y1, x2, y2 );
-    }
-}
-
-void draw_arc( int x, int y, int a, int b, float angle, bool up, Uint8 segments ) {
-    float dt = M_PI / (float) ( segments - 1 );
-    SDL_Point pos[segments];
-    float t = 0, xp, yp;
-
-    if ( b != 0 ) {
-        dt = !up ? dt : -dt;
-        for ( Uint8 i = 0; i < segments; i++ ) {
-            xp = x + ( cos( t ) + 1 ) * a;
-            yp = y + ( sin( t ) + 1 ) * b;
-            pos[i].x = ceil( xp * cos( angle ) + yp * sin( angle ) );
-            pos[i].y = ceil( xp * sin( angle ) + yp * cos( angle ) );
-            t += dt;
-        }
-        SDL_RenderDrawLines( _render, pos, segments );
-    } else {
-        float tmp_cos_x, tmp_cos_y, tmp_sin_x, tmp_sin_y;
-        int x1, y1, x2, y2;
-        tmp_cos_x = x * cos( angle );
-        tmp_cos_y = y * cos( angle );
-        tmp_sin_x = x * sin( angle );
-        tmp_sin_y = y * sin( angle );
-        x1 = ceil( tmp_cos_x + tmp_sin_y );
-        y1 = ceil( tmp_sin_x + tmp_cos_y );
-        x2 = ceil( ( x + 2 * a ) * cos( angle ) + tmp_sin_y );
-        y2 = ceil( ( x + 2 * a ) * sin( angle ) + tmp_cos_y );
         SDL_RenderDrawLine( _render, x1, y1, x2, y2 );
     }
 }

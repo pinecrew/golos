@@ -16,4 +16,3 @@ void set_coloru( Uint32 color );
 void set_color3u( Uint8 red, Uint8 green, Uint8 blue );
 void set_color4u( Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha );
 void draw_ellipse( int x, int y, int a, int b );
-void draw_arc( int x, int y, int a, int b, float angle = 0.0f, bool up = true, Uint8 segments = 64 );
