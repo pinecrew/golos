@@ -31,24 +31,21 @@ void set_color4u( Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha ) {
 }
 
 /* рисуем эллипс с центром в точке (x, y) с полуосями a и b */
-void draw_ellipse( unsigned int x, unsigned int y, unsigned int a, unsigned int b ) {
-    const unsigned npoints = 64;
+void draw_ellipse( unsigned int x, unsigned int y, float a, float b ) {
+    const size_t npoints = 64;
     const float dt = 2.0 * M_PI / ( npoints - 1 );
     SDL_Point pos[npoints];
+    unsigned int i = 0;
 
     if ( a && b ) {
-        unsigned int i = 0;
         for ( float t = 0; t < npoints * dt; ++i, t += dt ) {
             pos[i].x = x + round( cos( t ) * a );
             pos[i].y = y + round( sin( t ) * b );
         }
-        SDL_RenderDrawLines( _render, pos, i );
     } else {
-        int x1, y1, x2, y2;
-        x1 = x - a;
-        y1 = y - b;
-        x2 = x + a;
-        y2 = y + b;
-        SDL_RenderDrawLine( _render, x1, y1, x2, y2 );
+        pos[0] = { (int)( x - a ), (int)( y - b ) };
+        pos[1] = { (int)( x + a ), (int)( y + b ) };
+        i = 2;
     }
+    SDL_RenderDrawLines( _render, pos, i );
 }
