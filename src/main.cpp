@@ -22,6 +22,12 @@ void game_event( SDL_Event * event ) {
         case SDL_QUIT:
             quit_flag = true;
             break;
+        case SDL_WINDOWEVENT:
+            if ( event->window.event == SDL_WINDOWEVENT_RESIZED ) {
+                screen_width  = event->window.data1;
+                screen_height = event->window.data2;
+            }
+            break;
         case SDL_KEYDOWN:
             switch ( event->key.keysym.sym ) {
                 case SDLK_ESCAPE:
