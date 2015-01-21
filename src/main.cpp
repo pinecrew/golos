@@ -53,7 +53,7 @@ void draw_point( int x, int y, int size ) {
 void game_render( void ) {
     SDL_RenderClear( render );
     set_coloru( COLOR_WHITE );
-    for ( float p = 0; p < 1; p += 0.1 ) {
+    for ( float p = 0; p <= 0.5; p += 0.1 ) {
         draw_ellipse( screen_width / 2, screen_height / 2, R * cos(p * M_PI), R);
     }
 
