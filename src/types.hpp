@@ -11,17 +11,17 @@
 //};
 
 // surface point
-//struct surfPoint {
-    //int theta, phi;
+struct surfPoint {
+    int theta, phi;
     //surfPoint( viewPoint );
-//};
+};
 
 // cell
-//struct cell {
-    //int i, j;
+struct cell {
+    int i, j;
     //bool alive;
     //cell( surfPoint );
-//};
+};
 
 struct field {
     unsigned int width, height;
