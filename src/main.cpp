@@ -3,6 +3,7 @@
 #include "draw.hpp"
 
 const char * game_name = "Game Of Life On Surface";
+const int segments = 16;
 int screen_width = 640;
 int screen_height = 640;
 int R = 200;
@@ -54,17 +55,14 @@ void game_render( void ) {
     SDL_RenderClear( render );
     set_coloru( COLOR_WHITE );
     // меридианы
-    for ( float p = 0; p <= 0.5; p += 0.1 ) {
-        draw_ellipse( screen_width / 2, screen_height / 2,
-                       R * cos( p * M_PI ), R );
+    for ( float p = 0; p <= 0.5; p += 0.5f / ( segments / 2 ) ) {
+        draw_ellipse( screen_width / 2, screen_height / 2, R * cos( p * M_PI ), R );
     }
-
     // широты
-    for ( float p = 0; p < 1; p += 0.1 ) {
-        draw_ellipse( screen_width / 2, screen_height / 2 + R * cos(p * M_PI),
+    for ( float p = 0; p < 1.0f; p += 1.0f / segments ) {
+        draw_ellipse( screen_width / 2, screen_height / 2 + R * cos( p * M_PI ),
                       R * sin( p * M_PI ), 0 );
     }
-
     set_coloru( COLOR_BLACK );
     SDL_RenderPresent( render );
 }
