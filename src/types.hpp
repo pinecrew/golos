@@ -4,11 +4,11 @@
 // Описание структур для точек на экране
 // точек на поверхности и ячеек
 
-// viewport point
-//struct viewPoint {
-    //int x, y;
+// screen point
+struct screenPoint {
+    int x, y;
     //viewPoint( surfPoint );
-//};
+};
 
 // surface point
 struct surfPoint {

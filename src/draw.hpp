@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL2/SDL.h>
 #include <cmath>
+#include "types.hpp"
 
 enum COLOR {
     COLOR_WHITE     = 0xffffff,
@@ -8,11 +9,11 @@ enum COLOR {
     COLOR_RED       = 0xff0000,
     COLOR_GREEN     = 0x00ff00,
     COLOR_BLUE      = 0x0000ff,
-    COLOR_YELLOW    = 0xffff00, 
+    COLOR_YELLOW    = 0xffff00,
 };
 
 void draw_init( SDL_Renderer * render );
 void set_coloru( Uint32 color );
 void set_color3u( Uint8 red, Uint8 green, Uint8 blue );
 void set_color4u( Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha );
-void draw_ellipse( unsigned int x, unsigned int y, float a, float b );
+void draw_sphere( screenPoint center, std::size_t R, std::size_t segments );

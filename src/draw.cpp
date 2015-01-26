@@ -32,7 +32,7 @@ void set_color4u( Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha ) {
 
 /* рисуем эллипс с центром в точке (x, y) с полуосями a и b */
 void draw_ellipse( unsigned int x, unsigned int y, float a, float b ) {
-    const size_t npoints = 64;
+    const std::size_t npoints = 64;
     const float dt = 2.0 * M_PI / ( npoints - 1 );
     SDL_Point pos[npoints];
     unsigned int i = 0;
@@ -49,3 +49,17 @@ void draw_ellipse( unsigned int x, unsigned int y, float a, float b ) {
     }
     SDL_RenderDrawLines( _render, pos, i );
 }
+
+void draw_sphere( screenPoint center, std::size_t R, std::size_t segments )
+{
+    // меридианы
+    for ( float p = 0; p <= 0.5f; p += 1.0f / segments ) {
+        draw_ellipse( center.x, center.y, R * cos( p * M_PI ), R );
+    }
+    // широты
+    for ( float p = 0; p < 1.0f; p += 1.0f / segments ) {
+        draw_ellipse( center.x, center.y + R * cos( p * M_PI ),
+                      R * sin( p * M_PI ), 0 );
+    }
+}
+

@@ -54,15 +54,7 @@ void draw_point( int x, int y, int size ) {
 void game_render( void ) {
     SDL_RenderClear( render );
     set_coloru( COLOR_WHITE );
-    // меридианы
-    for ( float p = 0; p <= 0.5; p += 0.5f / ( segments / 2 ) ) {
-        draw_ellipse( screen_width / 2, screen_height / 2, R * cos( p * M_PI ), R );
-    }
-    // широты
-    for ( float p = 0; p < 1.0f; p += 1.0f / segments ) {
-        draw_ellipse( screen_width / 2, screen_height / 2 + R * cos( p * M_PI ),
-                      R * sin( p * M_PI ), 0 );
-    }
+    draw_sphere( { screen_width / 2, screen_height / 2 }, R, segments );
     set_coloru( COLOR_BLACK );
     SDL_RenderPresent( render );
 }
@@ -89,7 +81,7 @@ void game_init( void ) {
     draw_init( render );
 }
 
-int main( int argc, char * argv[] ) {
+int main() {
     Uint32 FPS_MAX = 1000 / 63; // ~ 60 fps
 
     game_init();
