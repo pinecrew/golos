@@ -1,25 +1,52 @@
 #include "logics.hpp"
 
-cell cell_from_point(field & f, surfPoint & p)
-{
-    return { (int)( p.theta / M_PI   * f.height ),
-             (int)( p.phi   / M_PI_2 * f.width  )};
+// получаем контур на поверхности сферы
+void cell_contour( cell c, field f, std::size_t npoints, surfPoint* contour ){
+    // пока не обрабатываем ячейки у полюсов
+    std::size_t pos = npoints / 4; // points on side
+    std::size_t i = 0;
+    // обход из правого нижнего угла против часовой стрелки
+    // по меридиану
+    for ( ; i < pos; ++i ){
+        contour[i].theta = ( c.i + 1 - ( float ) i / pos ) * M_PI / f.height;
+        contour[i].phi = ( c.j + 1 ) * M_PI_2 / f.width;
+    }
+    // по широте
+    for ( ; i < 2 * pos; ++i ){
+        contour[i].theta = c.i * M_PI / f.height;
+        contour[i].phi = ( c.j + 1 - ( float ) ( i - pos ) / pos )
+                         * M_PI_2 / f.width;
+    }
+    // снова по меридиану
+    for ( ; i < 3 * pos; ++i ){
+        contour[i].theta = ( c.i + ( float ) ( i - 2 * pos ) / pos )
+                           * M_PI / f.height;
+        contour[i].phi = c.j * M_PI_2 / f.width;
+    }
+    // и ещё раз по широте
+    for ( ; i < npoints; ++i) {
+        contour[i].theta = ( c.i + 1 ) * M_PI / f.height;
+        contour[i].phi = ( c.j + ( float ) ( i - 3 * pos ) / pos )
+                         * M_PI_2 / f.width;
+    }
 }
 
-void create(field & f, surfPoint & p)
-{
+cell cell_from_point( field & f, surfPoint & p ){
+    return { ( int )( p.theta / M_PI   * f.height ),
+             ( int )( p.phi   / M_PI_2 * f.width  )};
+}
+
+void create( field & f, surfPoint & p ){
     auto c = cell_from_point(f, p);
     f[c.i][c.j] = true;
 }
 
-void kill(field & f, surfPoint & p)
-{
+void kill( field & f, surfPoint & p ){
     auto c = cell_from_point(f, p);
     f[c.i][c.j] = false;
 }
 
-void toggle(field & f, surfPoint & p)
-{
+void toggle( field & f, surfPoint & p ){
     auto c = cell_from_point(f, p);
     f[c.i][c.j] = !f[c.i][c.j];
 }
