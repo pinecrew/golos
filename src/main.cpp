@@ -46,11 +46,6 @@ void game_loop( void ) {
     // insert code
 }
 
-void draw_point( int x, int y, int size ) {
-    SDL_Rect rect = { x, y, size, size };
-    SDL_RenderFillRect( render, &rect );
-}
-
 void game_render( void ) {
     SDL_RenderClear( render );
     set_coloru( COLOR_WHITE );
@@ -81,7 +76,7 @@ void game_init( void ) {
     draw_init( render );
 }
 
-int main() {
+int main( int argc, char * argv[] ) {
     Uint32 FPS_MAX = 1000 / 63; // ~ 60 fps
 
     game_init();
