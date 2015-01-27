@@ -16,4 +16,4 @@ void draw_init( SDL_Renderer * render );
 void set_coloru( Uint32 color );
 void set_color3u( Uint8 red, Uint8 green, Uint8 blue );
 void set_color4u( Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha );
-void draw_sphere( screenPoint center, std::size_t R, std::size_t segments );
+void draw_sphere( screenPoint center, std::size_t R, field & f );

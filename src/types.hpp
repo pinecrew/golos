@@ -24,8 +24,8 @@ struct cell {
 };
 
 struct field {
-    unsigned int width, height;
+    std::size_t width, height;
     std::vector< std::vector< bool > > f;
-    std::vector< bool > operator[](unsigned int i);
-    field(unsigned int w, unsigned int h);
+    std::vector< bool > operator[](std::size_t i);
+    field(std::size_t h, std::size_t w);
 };

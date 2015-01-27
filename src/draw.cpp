@@ -37,29 +37,29 @@ void draw_ellipse( unsigned int x, unsigned int y, float a, float b ) {
     SDL_Point pos[npoints];
     unsigned int i = 0;
 
-    if ( a && b ) {
+    if ( a > 0 && b > 0 ) {
         for ( float t = 0; t < npoints * dt; ++i, t += dt ) {
             pos[i].x = x + round( cos( t ) * a );
             pos[i].y = y + round( sin( t ) * b );
         }
     } else {
-        pos[0] = { (int)( x - a ), (int)( y - b ) };
-        pos[1] = { (int)( x + a ), (int)( y + b ) };
+        pos[0] = { ( int )( x - a ), ( int )( y - b ) };
+        pos[1] = { ( int )( x + a ), ( int )( y + b ) };
         i = 2;
     }
     SDL_RenderDrawLines( _render, pos, i );
 }
 
-void draw_sphere( screenPoint center, std::size_t R, std::size_t segments )
-{
+void draw_sphere( screenPoint center, std::size_t R, field & f ) {
     // меридианы
-    for ( float p = 0; p <= 0.5f; p += 1.0f / segments ) {
-        draw_ellipse( center.x, center.y, R * cos( p * M_PI ), R );
+    for ( unsigned int i = 0; i < f.width; ++i ) {
+        float p = i * 2 * M_PI / f.width;
+        draw_ellipse( center.x, center.y, R * fabs( cos( p ) ), R );
     }
     // широты
-    for ( float p = 0; p < 1.0f; p += 1.0f / segments ) {
-        draw_ellipse( center.x, center.y + R * cos( p * M_PI ),
-                      R * sin( p * M_PI ), 0 );
+    for ( unsigned int i = 1; i < f.height; ++i ) {
+        float p = i * M_PI / f.height;
+        draw_ellipse( center.x, center.y + R * cos( p ), R * sin( p ), 0 );
     }
 }
 

@@ -54,17 +54,17 @@ void toggle( field & f, surfPoint & p ){
 void nextStep(field & f){
     // массив для подсчёта соседей
     auto tmp = new char*[f.height];
-    for (unsigned int i = 0; i < f.height; ++i)
+    for (std::size_t i = 0; i < f.height; ++i)
         tmp[i] = new char[f.width];
 
     // 1. Обрабатываем первую строку
     //    в ней все соседи друг другу, так как есть общая вершина (полюс)
     //    поэтому проще всего посчитать сумму в этой строке
-    unsigned int s = 0;
-    for (unsigned int i = 0; i < f.width; ++i)
+    std::size_t s = 0;
+    for (std::size_t i = 0; i < f.width; ++i)
         s += f[0][i];
 
-    for (unsigned int i = 0; i < f.width; ++i)
+    for (std::size_t i = 0; i < f.width; ++i)
         if ( f[0][i] ){
             tmp[0][i] = s - 1;
             tmp[1][( i + f.width - 1 ) % f.width] += 1;
@@ -75,8 +75,8 @@ void nextStep(field & f){
         }
 
     // 2. Между первой и последней
-    for (unsigned int j = 1; j < f.height - 1; ++j)
-        for (unsigned int i = 0; i < f.width; ++i)
+    for (std::size_t j = 1; j < f.height - 1; ++j)
+        for (std::size_t i = 0; i < f.width; ++i)
             if ( f[j][i] ){
                 tmp[j - 1][( i + f.width - 1 ) % f.width] += 1;
                 tmp[j - 1][i]                             += 1;
@@ -92,12 +92,12 @@ void nextStep(field & f){
             }
 
     // 3. Последняя аналогично первой
-    unsigned int p = f.height - 1;
+    std::size_t p = f.height - 1;
     s = 0;
-    for (unsigned int i = 0; i < f.width; ++i)
+    for (std::size_t i = 0; i < f.width; ++i)
         s += f[p][i];
 
-    for (unsigned int i = 0; i < f.width; ++i)
+    for (std::size_t i = 0; i < f.width; ++i)
         if ( f[0][i] ){
             tmp[0][i] += s - 1;
 
@@ -109,8 +109,8 @@ void nextStep(field & f){
         }
 
     // 4. Установка нового состояния
-    for (unsigned int j = 0; j < f.height; ++j)
-        for (unsigned int i = 0; i < f.width; ++i)
+    for (std::size_t j = 0; j < f.height; ++j)
+        for (std::size_t i = 0; i < f.width; ++i)
             f[j][i] = (tmp[j][i] == 2 && f[j][i]) || (tmp[j][i] == 3);
     delete[] tmp;
 }

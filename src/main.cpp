@@ -3,10 +3,10 @@
 #include "draw.hpp"
 
 const char * game_name = "Game Of Life On Surface";
-const int segments = 16;
 int screen_width = 640;
 int screen_height = 640;
 int R = 200;
+field f(16, 32);
 bool quit_flag = false;
 SDL_Window * window = NULL;
 SDL_Renderer * render = NULL;
@@ -54,7 +54,7 @@ void draw_point( int x, int y, int size ) {
 void game_render( void ) {
     SDL_RenderClear( render );
     set_coloru( COLOR_WHITE );
-    draw_sphere( { screen_width / 2, screen_height / 2 }, R, segments );
+    draw_sphere( { screen_width / 2, screen_height / 2 }, R, f );
     set_coloru( COLOR_BLACK );
     SDL_RenderPresent( render );
 }
