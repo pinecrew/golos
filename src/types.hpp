@@ -16,6 +16,11 @@ struct surfPoint {
     //surfPoint( viewPoint );
 };
 
+// вектор в сферических координатах
+struct svec2 {
+    int theta, phi;
+};
+
 // cell
 struct cell {
     int i, j;
