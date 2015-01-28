@@ -68,7 +68,7 @@ int compare_int( const void * a, const void * b ) {
 }
 
 // from SDL2_gfxPrimitives.c : filledPolygonRGBAMT
-int draw_filled_polygon( const int * vx, const int * vy, const int n, Uint32 color ) {
+int draw_filled_polygon( const int * vx, const int * vy, const int n ) {
     int min_y, max_y, result, counts;
     int ind1, ind2, x1, x2, y1, y2;
     int * polygons = new int [n];
@@ -115,8 +115,6 @@ int draw_filled_polygon( const int * vx, const int * vy, const int n, Uint32 col
         }
         qsort( polygons, counts, sizeof( int ), compare_int );
         result = 0;
-        result |= SDL_SetRenderDrawBlendMode( _render, SDL_BLENDMODE_NONE );
-        result |= set_coloru( color );
         for ( int i = 0; i < counts; i += 2 ) {
             xa = polygons[i+0] + 1;
             xb = polygons[i+1] - 1;

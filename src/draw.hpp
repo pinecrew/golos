@@ -17,4 +17,4 @@ int set_coloru( Uint32 color );
 int set_color3u( Uint8 red, Uint8 green, Uint8 blue );
 int set_color4u( Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha );
 void draw_sphere( screenPoint center, std::size_t R, field & f );
-int draw_filled_polygon( const int * vx, const int * vy, const int n, Uint32 color );
+int draw_filled_polygon( const int * vx, const int * vy, const int n );

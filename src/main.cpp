@@ -47,7 +47,7 @@ void game_loop( void ) {
 }
 
 // testing function
-void draw_star( int x0, int y0, float R, float r, float angle, int n, Uint32 color ) {
+void draw_star( int x0, int y0, float R, float r, float angle, int n ) {
     int * x = new int [n * 2 + 1];
     int * y = new int [n * 2 + 1];
     float a = 0.0f, A = 0.0f;
@@ -65,7 +65,7 @@ void draw_star( int x0, int y0, float R, float r, float angle, int n, Uint32 col
     }
     x[n * 2 + 1] = x[0];
     y[n * 2 + 1] = y[0];
-    draw_filled_polygon( x, y, 2 * n, color );
+    draw_filled_polygon( x, y, 2 * n );
     delete[] x;
     delete[] y;
 }
@@ -74,7 +74,8 @@ void game_render( void ) {
     SDL_RenderClear( render );
     set_coloru( COLOR_WHITE );
     draw_sphere( { screen_width / 2, screen_height / 2 }, R, f );
-    draw_star( screen_width / 2, screen_height / 2, R, R / 1.5f, 18.0f, 5, COLOR_RED );
+    set_coloru( COLOR_RED );
+    draw_star( screen_width / 2, screen_height / 2, R, R / 1.5f, 18.0f, 5 );
     set_coloru( COLOR_BLACK );
     SDL_RenderPresent( render );
 }
