@@ -33,11 +33,12 @@ int set_color4u( Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha ) {
 void draw_path(svec2 n, SDL_Point center, float R, std::vector<surfPoint> vs) {
     // отрисовываем путь
     // пока без проверки невидимых линий
-    SDL_Point path[vs.size()];
+    SDL_Point path[vs.size() + 1];
     for (std::size_t i = 0; i < vs.size(); ++i) {
         path[i] = surf_to_screen( n, vs[i], center, R );
     }
-    SDL_RenderDrawLines( _render, path, vs.size() );
+    path[vs.size()] = path[vs.size()-1]; // не бага, а фича; фиксим flicker эффект
+    SDL_RenderDrawLines( _render, path, vs.size() + 1 );
 }
 
 void draw_sphere( svec2 n, SDL_Point center, float R, field & f ) {
