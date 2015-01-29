@@ -35,6 +35,18 @@ void game_event( SDL_Event * event ) {
                 case SDLK_ESCAPE:
                     quit_flag = true;
                     break;
+                case SDLK_UP:
+                    view_direction.theta += 0.01f;
+                    break;
+                case SDLK_DOWN:
+                    view_direction.theta -= 0.01f;
+                    break;
+                case SDLK_LEFT:
+                    view_direction.phi += 0.01f;
+                    break;
+                case SDLK_RIGHT:
+                    view_direction.phi -= 0.01f;
+                    break;
                 default:
                     break;
             }
