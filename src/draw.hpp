@@ -1,5 +1,4 @@
 #pragma once
-#include <SDL2/SDL.h>
 #include <cmath>
 #include "types.hpp"
 
@@ -16,5 +15,5 @@ void draw_init( SDL_Renderer * render );
 int set_coloru( Uint32 color );
 int set_color3u( Uint8 red, Uint8 green, Uint8 blue );
 int set_color4u( Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha );
-void draw_sphere( screenPoint center, std::size_t R, field & f );
+void draw_sphere( svec2 n, SDL_Point center, float R, field & f );
 int draw_filled_polygon( const int * vx, const int * vy, const int n );

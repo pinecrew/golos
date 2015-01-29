@@ -30,36 +30,34 @@ int set_color4u( Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha ) {
     return SDL_SetRenderDrawColor( _render, red, green, blue, alpha );
 }
 
-/* рисуем эллипс с центром в точке (x, y) с полуосями a и b */
-void draw_ellipse( unsigned int x, unsigned int y, float a, float b ) {
-    const std::size_t npoints = 64;
-    const float dt = 2.0 * M_PI / ( npoints - 1 );
-    SDL_Point pos[npoints];
-    unsigned int i = 0;
-
-    if ( a > 0 && b > 0 ) {
-        for ( float t = 0; t < npoints * dt; ++i, t += dt ) {
-            pos[i].x = x + round( cos( t ) * a );
-            pos[i].y = y + round( sin( t ) * b );
-        }
-    } else {
-        pos[0] = { ( int )( x - a ), ( int )( y - b ) };
-        pos[1] = { ( int )( x + a ), ( int )( y + b ) };
-        i = 2;
+void draw_path(svec2 n, SDL_Point center, float R, std::vector<surfPoint> vs) {
+    // отрисовываем путь
+    // пока без проверки невидимых линий
+    SDL_Point path[vs.size()];
+    for (std::size_t i = 0; i < vs.size(); ++i) {
+        path[i] = surf_to_screen( n, vs[i], center, R );
     }
-    SDL_RenderDrawLines( _render, pos, i );
+    SDL_RenderDrawLines( _render, path, vs.size() );
 }
 
-void draw_sphere( screenPoint center, std::size_t R, field & f ) {
+void draw_sphere( svec2 n, SDL_Point center, float R, field & f ) {
+    // набор точек от 0 до 2pi
+    int size = 65;
+    std::vector<surfPoint> v(size);
+    for (int i = 0; i < size; ++i) {v[i].theta = 2 * M_PI * i / (size - 1);}
     // меридианы
     for ( unsigned int i = 0; i < f.width; ++i ) {
         float p = i * 2 * M_PI / f.width;
-        draw_ellipse( center.x, center.y, R * fabs( cos( p ) ), R );
+        for (int i = 0; i < size; ++i) {v[i].phi = p;};
+        draw_path( n, center, R, v);
     }
+
+    for (int i = 0; i < size; ++i) {v[i].phi = 2 * M_PI * i / (size - 1);}
     // широты
     for ( unsigned int i = 1; i < f.height; ++i ) {
         float p = i * M_PI / f.height;
-        draw_ellipse( center.x, center.y + R * cos( p ), R * sin( p ), 0 );
+        for (int i = 0; i < size; ++i) {v[i].theta = p;};
+        draw_path( n, center, R, v);
     }
 }
 

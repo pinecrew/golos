@@ -6,6 +6,7 @@ const char * game_name = "Game Of Life On Surface";
 int screen_width = 640;
 int screen_height = 640;
 int R = 200;
+svec2 view_direction = { M_PI / 4, 0 };
 field f(16, 32);
 bool quit_flag = false;
 SDL_Window * window = NULL;
@@ -73,9 +74,9 @@ void draw_star( int x0, int y0, float R, float r, float angle, int n ) {
 void game_render( void ) {
     SDL_RenderClear( render );
     set_coloru( COLOR_WHITE );
-    draw_sphere( { screen_width / 2, screen_height / 2 }, R, f );
+    draw_sphere( view_direction, {screen_width / 2, screen_height / 2}, R, f );
     set_coloru( COLOR_RED );
-    draw_star( screen_width / 2, screen_height / 2, R, R / 1.5f, 18.0f, 5 );
+    //draw_star( screen_width / 2, screen_height / 2, R, R / 1.5f, 18.0f, 5 );
     set_coloru( COLOR_BLACK );
     SDL_RenderPresent( render );
 }
