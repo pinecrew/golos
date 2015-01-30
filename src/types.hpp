@@ -5,6 +5,7 @@
 struct vec3s {
     float r, theta, phi;
     float operator*(vec3s v);
+    friend vec3s & operator += ( vec3s & lhs, const vec3s & rhs );
 };
 
 struct vec3d {

@@ -28,6 +28,13 @@ float vec3s::operator*( vec3s rhs ) {
     return vec3d( *this ) * vec3d ( rhs );
 }
 
+vec3s & operator += ( vec3s & lhs, const vec3s & rhs ) {
+    lhs.r += rhs.r;
+    lhs.theta += rhs.theta;
+    lhs.phi += rhs.phi;
+    return lhs;
+}
+
 SDL_Point surf_to_screen( vec3s n, vec3s sp, SDL_Point center ) {
     // координаты ортов в плоскости экрана в декартовых координатах
     vec3s ex = { 1, ( float ) ( M_PI / 2 ), n.phi + ( float ) ( M_PI / 2 ) };

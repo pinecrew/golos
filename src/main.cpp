@@ -6,12 +6,16 @@ const char * game_name = "Game Of Life On Surface";
 int screen_width = 640;
 int screen_height = 640;
 int R = 200;
+int px, py;
+vec3s delta = { 0, 0, 0 };
 vec3s view_direction = {1, M_PI / 4, 0 };
 field f(16, 32);
 bool quit_flag = false;
+bool button_set = false;
 SDL_Window * window = NULL;
 SDL_Renderer * render = NULL;
 SDL_Event event;
+
 
 void game_send_error( int code ) {
     printf( "[error]: %s\n", SDL_GetError() );
@@ -62,6 +66,30 @@ void game_event( SDL_Event * event ) {
                 default:
                     break;
             }
+        case SDL_MOUSEMOTION:
+            if ( button_set ) {
+                // experimental scrolling
+                delta.phi = -( event->button.x - px ) / 1000.0f;
+                delta.theta = ( event->button.y - py ) / 1000.0f;
+                view_direction += delta;
+            }
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+            switch ( event->button.button ) {
+                case SDL_BUTTON_LEFT:
+                    if ( button_set == false ) {
+                        px = event->button.x;
+                        py = event->button.y;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            button_set = true;
+            break;
+        case SDL_MOUSEBUTTONUP:
+            button_set = false;
+            break;
         default:
             break;
     }
