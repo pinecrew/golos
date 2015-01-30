@@ -56,24 +56,10 @@ void game_event( SDL_Event * event ) {
             }
         case SDL_MOUSEMOTION:
             if ( button_set ) {
-                // experimental scrolling
                 delta.phi = -( event->button.x - px ) / 100.0f;
                 delta.theta = ( event->button.y - py ) / 100.0f;
                 px = event->button.x;
                 py = event->button.y;
-                // theta & phi borders
-                /*
-                if ( view_direction.theta >= M_PI ) {
-                    view_direction.theta -= M_PI;
-                } else if ( view_direction.theta < 0.0f ) {
-                    view_direction.theta += M_PI;
-                }
-                if ( view_direction.phi >= 2.0f * M_PI ) {
-                    view_direction.phi -= 2.0f * M_PI;
-                } else if ( view_direction.phi < 0.0f ) {
-                    view_direction.phi += 2.0f * M_PI;
-                }
-                */
                 view_direction += delta;
             }
             break;
