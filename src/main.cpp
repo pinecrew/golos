@@ -119,14 +119,11 @@ void game_init( void ) {
 }
 
 int main( int argc, char * argv[] ) {
-    Uint32 FPS_MAX = 1000 / 63; // ~ 60 fps
-
     game_init();
     while ( quit_flag == false ) {
         game_event( &event );
         game_loop();
         game_render();
-        SDL_Delay( FPS_MAX );
     }
     game_destroy();
     return EXIT_SUCCESS;
