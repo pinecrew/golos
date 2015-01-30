@@ -2,8 +2,6 @@
 #include <iostream>
 #include "types.hpp"
 
-static float z_buffer = 0.0f;
-
 field::field(std::size_t h, std::size_t w){
     this->width = w;
     this->height = h;
@@ -51,13 +49,10 @@ SDL_Point surf_to_screen( vec3s n, vec3s sp, SDL_Point center ) {
 
     // немного скалярных произведений
     return { center.x + ( int ) ( sp * ex ),
-             center.y + ( int ) ( sp * ey ) };
-}
-
-void set_zbuffer( float z ) {
-    z_buffer = z;
+             center.y - ( int ) ( sp * ey ) };
 }
 
 bool visible ( vec3s n, vec3s sp ) {
-    return ( n * sp >= z_buffer ); // грязный хак для увеличения области видимости
+    float threshold = 0.1f;
+    return ( n * sp >= -threshold * sp.r ); // хак для увеличения области видимости
 }

@@ -72,6 +72,14 @@ void draw_sphere( vec3s n, SDL_Point center, float R, field & f ) {
         for (int i = 0; i < size; ++i) {v[i].theta = p;};
         draw_path( n, center, v);
     }
+
+    // оси координат (для проверки корректности отрисовки)
+    set_color3u(255, 0, 0);
+    draw_path( n, center, {{0,0,0}, {1.2f*R, M_PI/2, 0}});
+    set_color3u(0, 255, 0);
+    draw_path( n, center, {{0,0,0}, {1.2f*R, M_PI/2, M_PI / 2}});
+    set_color3u(0, 0, 255);
+    draw_path( n, center, {{0,0,0}, {1.2f*R, 0, 0}});
 }
 
 int compare_int( const void * a, const void * b ) {

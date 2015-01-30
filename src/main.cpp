@@ -5,7 +5,7 @@
 const char * game_name = "Game Of Life On Surface";
 int screen_width = 640;
 int screen_height = 640;
-int R = 200;
+float R = 200;
 int px, py;
 vec3s delta = { 0, 0, 0 };
 vec3s view_direction = {1, M_PI / 4, 0 };
@@ -41,27 +41,15 @@ void game_event( SDL_Event * event ) {
                     break;
                 case SDLK_UP:
                     view_direction.theta -= 0.01f;
-                    if ( view_direction.theta <= 0.0f ) {
-                        view_direction.theta = M_PI;
-                    }
                     break;
                 case SDLK_DOWN:
                     view_direction.theta += 0.01f;
-                    if ( view_direction.theta >= M_PI ) {
-                        view_direction.theta = 0;
-                    }
                     break;
                 case SDLK_LEFT:
                     view_direction.phi -= 0.01f;
-                    if ( view_direction.phi <= 0.0f ) {
-                        view_direction.phi = 2.0f * M_PI;
-                    }
                     break;
                 case SDLK_RIGHT:
                     view_direction.phi += 0.01f;
-                    if ( view_direction.phi >= 2.0f * M_PI ) {
-                        view_direction.phi = 0.0f;
-                    }
                     break;
                 default:
                     break;
@@ -73,7 +61,7 @@ void game_event( SDL_Event * event ) {
                 delta.theta = ( event->button.y - py ) / 100.0f;
                 px = event->button.x;
                 py = event->button.y;
-                // theta & phi borders 
+                // theta & phi borders
                 /*
                 if ( view_direction.theta >= M_PI ) {
                     view_direction.theta -= M_PI;
@@ -142,7 +130,6 @@ void game_init( void ) {
     }
     SDL_SetRenderDrawBlendMode( render, SDL_BLENDMODE_BLEND );
     draw_init( render );
-    set_zbuffer( -30.0f );
 }
 
 int main( int argc, char * argv[] ) {
