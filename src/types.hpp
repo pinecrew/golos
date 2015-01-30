@@ -28,4 +28,5 @@ struct field {
 };
 
 SDL_Point surf_to_screen( vec3s n, vec3s sp, SDL_Point center );
+void set_zbuffer( float z );
 bool visible( vec3s n, vec3s v );

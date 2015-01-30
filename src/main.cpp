@@ -142,6 +142,7 @@ void game_init( void ) {
     }
     SDL_SetRenderDrawBlendMode( render, SDL_BLENDMODE_BLEND );
     draw_init( render );
+    set_zbuffer( -30.0f );
 }
 
 int main( int argc, char * argv[] ) {
