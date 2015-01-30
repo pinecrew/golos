@@ -53,5 +53,5 @@ SDL_Point surf_to_screen( vec3s n, vec3s sp, SDL_Point center ) {
 }
 
 bool visible ( vec3s n, vec3s sp ) {
-    return ( n * sp >= 0 );
+    return ( n * sp >= -30.0f ); // грязный хак для увеличения области видимости
 }
