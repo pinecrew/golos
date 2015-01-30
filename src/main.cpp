@@ -37,15 +37,27 @@ void game_event( SDL_Event * event ) {
                     break;
                 case SDLK_UP:
                     view_direction.theta -= 0.01f;
+                    if ( view_direction.theta <= 0.0f ) {
+                        view_direction.theta = M_PI;
+                    }
                     break;
                 case SDLK_DOWN:
                     view_direction.theta += 0.01f;
+                    if ( view_direction.theta >= M_PI ) {
+                        view_direction.theta = 0;
+                    }
                     break;
                 case SDLK_LEFT:
                     view_direction.phi -= 0.01f;
+                    if ( view_direction.phi <= 0.0f ) {
+                        view_direction.phi = 2.0f * M_PI;
+                    }
                     break;
                 case SDLK_RIGHT:
                     view_direction.phi += 0.01f;
+                    if ( view_direction.phi >= 2.0f * M_PI ) {
+                        view_direction.phi = 0.0f;
+                    }
                     break;
                 default:
                     break;
@@ -59,36 +71,10 @@ void game_loop( void ) {
     // insert code
 }
 
-// testing function
-void draw_star( int x0, int y0, float R, float r, float angle, int n ) {
-    int * x = new int [n * 2 + 1];
-    int * y = new int [n * 2 + 1];
-    float a = 0.0f, A = 0.0f;
-
-    angle *= M_PI / 180.0f;
-    for ( int i = 0; i < n * 2; i++ ) {
-        if ( i % 2 == 0 ) {
-            A = R;
-        } else {
-            A = r / 2;
-        }
-        x[i] = x0 + round( A * cos( a * M_PI / 180.0f + angle ) );
-        y[i] = y0 - round( A * sin( a * M_PI / 180.0f + angle ) );
-        a += 180.0f / (float) n;
-    }
-    x[n * 2 + 1] = x[0];
-    y[n * 2 + 1] = y[0];
-    draw_filled_polygon( x, y, 2 * n );
-    delete[] x;
-    delete[] y;
-}
-
 void game_render( void ) {
     SDL_RenderClear( render );
     set_coloru( COLOR_WHITE );
     draw_sphere( view_direction, {screen_width / 2, screen_height / 2}, R, f );
-    set_coloru( COLOR_RED );
-    //draw_star( screen_width / 2, screen_height / 2, R, R / 1.5f, 18.0f, 5 );
     set_coloru( COLOR_BLACK );
     SDL_RenderPresent( render );
 }
