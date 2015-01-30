@@ -30,27 +30,39 @@ int set_color4u( Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha ) {
     return SDL_SetRenderDrawColor( _render, red, green, blue, alpha );
 }
 
-void draw_path(svec2 n, SDL_Point center, float R, std::vector<surfPoint> vs) {
+void draw_path(vec3s n, SDL_Point center, std::vector<vec3s> vs) {
     // отрисовываем путь
     // пока без проверки невидимых линий
-    SDL_Point path[vs.size() + 1];
-    for (std::size_t i = 0; i < vs.size(); ++i) {
-        path[i] = surf_to_screen( n, vs[i], center, R );
+    SDL_Point prev;
+    bool pe = false;
+    for ( auto v: vs ) {
+        if ( visible ( n, v ) )
+        {
+            SDL_Point cur = surf_to_screen( n, v, center);
+            if ( pe )
+                SDL_RenderDrawLine( _render, prev.x, prev.y,
+                                             cur.x, cur.y );
+            prev = cur;
+            pe = true;
+        }
+        else
+            pe = false;
     }
-    path[vs.size()] = path[vs.size()-1]; // не бага, а фича; фиксим flicker эффект
-    SDL_RenderDrawLines( _render, path, vs.size() + 1 );
 }
 
-void draw_sphere( svec2 n, SDL_Point center, float R, field & f ) {
+void draw_sphere( vec3s n, SDL_Point center, float R, field & f ) {
     // набор точек от 0 до 2pi
     int size = 65;
-    std::vector<surfPoint> v(size);
-    for (int i = 0; i < size; ++i) {v[i].theta = 2 * M_PI * i / (size - 1);}
+    std::vector<vec3s> v(size);
+    for (int i = 0; i < size; ++i) {
+        v[i].r = R;
+        v[i].theta = 2 * M_PI * i / (size - 1);
+    }
     // меридианы
     for ( unsigned int i = 0; i < f.width; ++i ) {
         float p = i * 2 * M_PI / f.width;
         for (int i = 0; i < size; ++i) {v[i].phi = p;};
-        draw_path( n, center, R, v);
+        draw_path( n, center, v);
     }
 
     for (int i = 0; i < size; ++i) {v[i].phi = 2 * M_PI * i / (size - 1);}
@@ -58,7 +70,7 @@ void draw_sphere( svec2 n, SDL_Point center, float R, field & f ) {
     for ( unsigned int i = 1; i < f.height; ++i ) {
         float p = i * M_PI / f.height;
         for (int i = 0; i < size; ++i) {v[i].theta = p;};
-        draw_path( n, center, R, v);
+        draw_path( n, center, v);
     }
 }
 
@@ -121,7 +133,7 @@ int draw_filled_polygon( const int * vx, const int * vy, const int n ) {
             xb = ( xb >> 16 ) + ( ( xb & 32768 ) >> 15 );
             result |= SDL_RenderDrawLine( _render, xa, y, xb, y );
         }
-    } 
+    }
     delete[] polygons;
     return result;
 }

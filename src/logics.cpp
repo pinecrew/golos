@@ -1,7 +1,7 @@
 #include "logics.hpp"
 
 // получаем контур на поверхности сферы
-void cell_contour( cell c, field f, std::size_t npoints, surfPoint* contour ){
+void cell_contour( cell c, field f, std::size_t npoints, vec3s* contour ){
     // пока не обрабатываем ячейки у полюсов
     std::size_t pos = npoints / 4; // points on side
     std::size_t i = 0;
@@ -31,22 +31,22 @@ void cell_contour( cell c, field f, std::size_t npoints, surfPoint* contour ){
     }
 }
 
-cell cell_from_point( field & f, surfPoint & p ){
+cell cell_from_point( field & f, vec3s & p ){
     return { ( int )( p.theta / M_PI   * f.height ),
              ( int )( p.phi   / M_PI_2 * f.width  )};
 }
 
-void create( field & f, surfPoint & p ){
+void create( field & f, vec3s & p ){
     auto c = cell_from_point(f, p);
     f[c.i][c.j] = true;
 }
 
-void kill( field & f, surfPoint & p ){
+void kill( field & f, vec3s & p ){
     auto c = cell_from_point(f, p);
     f[c.i][c.j] = false;
 }
 
-void toggle( field & f, surfPoint & p ){
+void toggle( field & f, vec3s & p ){
     auto c = cell_from_point(f, p);
     f[c.i][c.j] = !f[c.i][c.j];
 }

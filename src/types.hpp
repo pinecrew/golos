@@ -2,25 +2,20 @@
 #include <SDL2/SDL.h>
 #include <vector>
 
-// Описание структур для точек на экране
-// точек на поверхности и ячеек
-
-// surface point
-struct surfPoint {
-    float theta, phi;
-    //surfPoint( viewPoint );
+struct vec3s {
+    float r, theta, phi;
+    float operator*(vec3s v);
 };
 
-// вектор в сферических координатах
-struct svec2 {
-    float theta, phi;
+struct vec3d {
+    float x, y, z;
+    vec3d(vec3s v);
+    float operator*(vec3d v);
 };
 
-// cell
+
 struct cell {
     int i, j;
-    //bool alive;
-    //cell( surfPoint );
 };
 
 struct field {
@@ -30,4 +25,5 @@ struct field {
     field(std::size_t h, std::size_t w);
 };
 
-SDL_Point surf_to_screen( svec2 n, surfPoint sp, SDL_Point center, float R );
+SDL_Point surf_to_screen( vec3s n, vec3s sp, SDL_Point center );
+bool visible( vec3s n, vec3s v );

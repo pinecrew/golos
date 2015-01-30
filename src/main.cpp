@@ -6,7 +6,7 @@ const char * game_name = "Game Of Life On Surface";
 int screen_width = 640;
 int screen_height = 640;
 int R = 200;
-svec2 view_direction = { M_PI / 4, 0 };
+vec3s view_direction = {1, M_PI / 4, 0 };
 field f(16, 32);
 bool quit_flag = false;
 SDL_Window * window = NULL;
@@ -36,16 +36,16 @@ void game_event( SDL_Event * event ) {
                     quit_flag = true;
                     break;
                 case SDLK_UP:
-                    view_direction.theta += 0.01f;
-                    break;
-                case SDLK_DOWN:
                     view_direction.theta -= 0.01f;
                     break;
+                case SDLK_DOWN:
+                    view_direction.theta += 0.01f;
+                    break;
                 case SDLK_LEFT:
-                    view_direction.phi += 0.01f;
+                    view_direction.phi -= 0.01f;
                     break;
                 case SDLK_RIGHT:
-                    view_direction.phi -= 0.01f;
+                    view_direction.phi += 0.01f;
                     break;
                 default:
                     break;

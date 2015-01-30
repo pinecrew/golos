@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iostream>
 #include "types.hpp"
 
 field::field(std::size_t h, std::size_t w){
@@ -13,27 +14,30 @@ std::vector< bool > field::operator[](std::size_t i){
     return this->f[i];
 }
 
-SDL_Point surf_to_screen( svec2 n, surfPoint sp, SDL_Point center, float R ) {
-    // координаты нормали к плоскости проекции в декартовых координатах
-    //float nx = sin( n.theta ) * cos( n.phi );
-    //float ny = sin( n.theta ) * sin( n.phi );
-    //float nz = cos( n.theta );
+vec3d::vec3d( vec3s v ) {
+    this->x = v.r * sin( v.theta ) * cos ( v.phi );
+    this->y = v.r * sin( v.theta ) * sin ( v.phi );
+    this->z = v.r * cos( v.theta );
+}
 
-    // координаты проекции точки на плоскость проекции в декартовых координатах
-    float px = R * sin( sp.theta ) * cos( sp.phi );
-    float py = R * sin( sp.theta ) * sin( sp.phi );
-    float pz = R * cos( sp.theta );
+float vec3d::operator*( vec3d rhs ) {
+    return this->x * rhs.x + this->y * rhs.y + this->z * rhs.z;
+}
 
+float vec3s::operator*( vec3s rhs ) {
+    return vec3d( *this ) * vec3d ( rhs );
+}
+
+SDL_Point surf_to_screen( vec3s n, vec3s sp, SDL_Point center ) {
     // координаты ортов в плоскости экрана в декартовых координатах
-    float yx = cos( n.theta ) * cos( n.phi );
-    float yy = cos( n.theta ) * sin( n.phi );
-    float yz = -sin( n.theta );
-
-    float xx = -sin( n.phi );
-    float xy = cos( n.phi );
-    float xz = 0;
+    vec3s ex = { 1, ( float ) ( M_PI / 2 ), n.phi + ( float ) ( M_PI / 2 ) };
+    vec3s ey = { 1, n.theta - ( float ) ( M_PI / 2 ), n.phi };
 
     // немного скалярных произведений
-    return { center.x + ( int ) ( xx * px + xy * py + xz * pz ),
-             center.y + ( int ) ( yx * px + yy * py + yz * pz ) };
+    return { center.x + ( int ) ( sp * ex ),
+             center.y + ( int ) ( sp * ey ) };
+}
+
+bool visible ( vec3s n, vec3s sp ) {
+    return ( n * sp >= 0 );
 }
