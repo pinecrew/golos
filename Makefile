@@ -3,7 +3,10 @@ CFLAGS = -Wall -std=c++11 $(shell sdl2-config --cflags)
 LFLAGS = $(shell sdl2-config --libs)
 
 ifeq ($(RELEASE), 1)
-	LFLAGS+=-O3
+	LFLAGS += -O3
+endif
+ifeq ($(DEBUG), 1)
+	LFLAGS += -ggdb -g3 -pg -O0
 endif
 
 target_file  := main
