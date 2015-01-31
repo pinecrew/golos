@@ -1,8 +1,10 @@
 #include "logics.hpp"
 
 // получаем контур на поверхности сферы
-void cell_contour( cell c, field f, std::size_t npoints, vec3s* contour ){
-    // пока не обрабатываем ячейки у полюсов
+std::vector<vec3s> cell_contour( cell c, field f, std::size_t npoints ){
+    // пока не обрабатываем ячейки у полюсов, хотя там одна из сторон просто
+    // вырождается в точку и все точки на этой стороне совпадают
+    std::vector<vec3s> contour(npoints);
     std::size_t pos = npoints / 4; // points on side
     std::size_t i = 0;
     // обход из правого нижнего угла против часовой стрелки
@@ -25,10 +27,12 @@ void cell_contour( cell c, field f, std::size_t npoints, vec3s* contour ){
     }
     // и ещё раз по широте
     for ( ; i < npoints; ++i) {
+        auto last = npoints - 3 * pos;
         contour[i].theta = ( c.i + 1 ) * M_PI / f.height;
-        contour[i].phi = ( c.j + ( float ) ( i - 3 * pos ) / pos )
+        contour[i].phi = ( c.j + ( float ) ( i - 3 * pos ) / last )
                          * M_PI_2 / f.width;
     }
+    return contour;
 }
 
 cell cell_from_point( field & f, vec3s & p ){

@@ -9,7 +9,7 @@
 #endif
     const double M_PI_2 = 1.57079632679489661923132169163975144;
 #endif
-void cell_contour( cell c, field f, std::size_t npoints, vec3s* contour );
+std::vector<vec3s> cell_contour( cell c, field f, std::size_t npoints );
 cell cell_from_point( field & f, vec3s & p );
 void create( field & f, vec3s & p );
 void kill( field & f, vec3s & p );

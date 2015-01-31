@@ -1,4 +1,5 @@
 #include "draw.hpp"
+#include <algorithm>
 
 SDL_Renderer * _render = NULL;
 
@@ -35,7 +36,7 @@ int draw_aaline( int x1, int y1, int x2, int y2 ) {
     int dx, dy, tmp, xdir, y0p1, x0pxdir, result;
     Sint32 xx0, yy0, xx1, yy1;
     Uint8 r, g, b, a;
-    
+
     result = SDL_GetRenderDrawColor( _render, &r, &g, &b, &a );
     xx0 = x1; yy0 = y1;
     xx1 = x2; yy1 = y2;
@@ -147,26 +148,23 @@ void draw_sphere( vec3s n, SDL_Point center, float R, field & f ) {
     draw_path( n, center, {{0,0,0}, {1.2f*R, 0, 0}});
 }
 
-int compare_int( const void * a, const void * b ) {
-    return ( *( const int * ) a ) - ( *( const int * ) b );
-}
-
 // from SDL2_gfxPrimitives.c : filledPolygonRGBAMT
-int draw_filled_polygon( const int * vx, const int * vy, const int n ) {
+int draw_filled_polygon( const SDL_Point* vs, const int n ) {
     int min_y, max_y, result, counts;
     int ind1, ind2, x1, x2, y1, y2;
     int * polygons = new int [n];
     int xa, xb;
 
-    if ( vx == NULL || vy == NULL || n < 3 ) {
+    if ( vs == nullptr || n < 3 ) {
         return -1;
     }
-    min_y = vy[0]; max_y = vy[0];
+    // TODO: переписать поиск минимума и максимума на библиотечных функциях
+    min_y = vs[0].y; max_y = vs[0].y;
     for ( int i = 1; i < n; i++ ) {
-        if ( vy[i] < min_y ) {
-            min_y = vy[i];
-        } else if ( vy[i] > max_y ) {
-            max_y = vy[i];
+        if ( vs[i].y < min_y ) {
+            min_y = vs[i].y;
+        } else if ( vs[i].y > max_y ) {
+            max_y = vs[i].y;
         }
     }
     result = 0;
@@ -180,16 +178,16 @@ int draw_filled_polygon( const int * vx, const int * vy, const int n ) {
                 ind1 = i - 1;
                 ind2 = i;
             }
-            y1 = vy[ind1];
-            y2 = vy[ind2];
+            y1 = vs[ind1].y;
+            y2 = vs[ind2].y;
             if ( y1 < y2 ) {
-                x1 = vx[ind1];
-                x2 = vx[ind2];
+                x1 = vs[ind1].x;
+                x2 = vs[ind2].x;
             } else if ( y1 > y2 ) {
-                y2 = vy[ind1];
-                y1 = vy[ind2];
-                x2 = vx[ind1];
-                x1 = vx[ind2];
+                y2 = vs[ind1].y;
+                y1 = vs[ind2].y;
+                x2 = vs[ind1].x;
+                x1 = vs[ind2].x;
             } else {
                 continue;
             }
@@ -197,7 +195,7 @@ int draw_filled_polygon( const int * vx, const int * vy, const int n ) {
                 polygons[counts++] = ( ( 65536 * ( y - y1 ) ) / ( y2 - y1 ) ) * ( x2 - x1 ) + ( 65536 * x1 );
             }
         }
-        qsort( polygons, counts, sizeof( int ), compare_int );
+        std::sort( polygons, polygons + counts );
         result = 0;
         for ( int i = 0; i < counts; i += 2 ) {
             xa = polygons[i+0] + 1;
