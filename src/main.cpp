@@ -1,8 +1,10 @@
 #include <cstdio>
 #include <SDL2/SDL.h>
 #include "draw.hpp"
+#include "font.hpp"
 
 const char * game_name = "Game Of Life On Surface";
+const wchar_t tmp_str[] = L"FPS: %.2f";
 int screen_width = 640;
 int screen_height = 640;
 float R = 200;
@@ -15,11 +17,25 @@ bool button_set = false;
 SDL_Window * window = NULL;
 SDL_Renderer * render = NULL;
 SDL_Event event;
-
+font_table_t * ft = NULL;
 
 void game_send_error( int code ) {
     printf( "[error]: %s\n", SDL_GetError() );
     exit( code );
+}
+
+float get_fps( void ) {
+    static float NewCount = 0.0f, LastCount = 0.0f, FpsRate = 0.0f;
+    static int FrameCount = 0;
+
+    NewCount = (float) SDL_GetTicks();
+    if ( ( NewCount - LastCount ) > 1000.0f ) {
+        FpsRate = ( FrameCount * 1000.0f ) / ( NewCount - LastCount );
+        LastCount = NewCount;
+        FrameCount = 0;
+    }
+    FrameCount++;
+    return FpsRate;
 }
 
 void game_event( SDL_Event * event ) {
@@ -56,11 +72,11 @@ void game_event( SDL_Event * event ) {
             }
         case SDL_MOUSEMOTION:
             if ( button_set ) {
-                delta.phi = -( event->button.x - px ) / 100.0f;
+                delta.phi = ( event->button.x - px ) / 100.0f;
                 delta.theta = ( event->button.y - py ) / 100.0f;
                 px = event->button.x;
                 py = event->button.y;
-                view_direction += delta;
+                view_direction -= delta;
             }
             break;
         case SDL_MOUSEBUTTONDOWN:
@@ -89,14 +105,20 @@ void game_loop( void ) {
 }
 
 void game_render( void ) {
+    const size_t BUFFER_SIZE = 128;
+    wchar_t buffer[BUFFER_SIZE];
+
     SDL_RenderClear( render );
     set_coloru( COLOR_WHITE );
     draw_sphere( view_direction, {screen_width / 2, screen_height / 2}, R, f );
+    swprintf( buffer, BUFFER_SIZE, tmp_str, get_fps() );
+    font_draw( render, ft, buffer, 5, screen_height - 16 );
     set_coloru( COLOR_BLACK );
     SDL_RenderPresent( render );
 }
 
 void game_destroy( void ) {
+    font_destroy( ft );
     SDL_DestroyRenderer( render );
     SDL_DestroyWindow( window );
     SDL_Quit();
@@ -116,6 +138,7 @@ void game_init( void ) {
     }
     SDL_SetRenderDrawBlendMode( render, SDL_BLENDMODE_BLEND );
     draw_init( render );
+    font_load( render, &ft, "./data/font.cfg" );
 }
 
 int main( int argc, char * argv[] ) {
