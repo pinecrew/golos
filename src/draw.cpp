@@ -148,7 +148,6 @@ void draw_sphere( vec3s n, SDL_Point center, float R, field & f ) {
     draw_path( n, center, {{0,0,0}, {1.2f*R, 0, 0}});
 }
 
-// from SDL2_gfxPrimitives.c : filledPolygonRGBAMT
 int draw_filled_polygon( const SDL_Point* vs, const int n ) {
     int min_y, max_y, result, counts;
     int ind1, ind2, x1, x2, y1, y2;
@@ -158,15 +157,8 @@ int draw_filled_polygon( const SDL_Point* vs, const int n ) {
     if ( vs == nullptr || n < 3 ) {
         return -1;
     }
-    // TODO: переписать поиск минимума и максимума на библиотечных функциях
-    min_y = vs[0].y; max_y = vs[0].y;
-    for ( int i = 1; i < n; i++ ) {
-        if ( vs[i].y < min_y ) {
-            min_y = vs[i].y;
-        } else if ( vs[i].y > max_y ) {
-            max_y = vs[i].y;
-        }
-    }
+    min_y = std::min( vs[0].y, vs[n].y );
+    max_y = std::max( vs[0].y, vs[n].y );
     result = 0;
     for ( int y = min_y; y < max_y; y++ ) {
         counts = 0;
