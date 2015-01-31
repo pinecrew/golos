@@ -1,6 +1,6 @@
 CXX = g++
 CFLAGS = -Wall -std=c++11 $(shell sdl2-config --cflags)
-LFLAGS = $(shell sdl2-config --libs)
+LFLAGS = $(shell sdl2-config --libs) -lSDL2_image
 
 ifeq ($(RELEASE), 1)
 	LFLAGS += -O3
