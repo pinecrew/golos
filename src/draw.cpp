@@ -8,6 +8,13 @@ void draw_init( SDL_Renderer * render ) {
     _render = render;
 }
 
+Uint32 get_coloru( void ) {
+    Uint8 r, g, b;
+
+    SDL_GetRenderDrawColor( _render, &r, &g, &b, NULL );
+    return ( r << 16 ) + ( g << 8 ) + b;
+}
+
 int set_coloru( Uint32 color ) {
     Uint8 r, ro, g, go, b, bo, ao;
 
@@ -118,6 +125,21 @@ void draw_path(vec3s n, SDL_Point center, std::vector<vec3s> vs) {
 }
 
 void draw_sphere( vec3s n, SDL_Point center, float R, field & f ) {
+    Uint32 color = get_coloru();
+
+    // отрисуем для теста одну клетку
+    set_color3u(255, 0, 255);
+    auto cc = cell_contour( {8, 0}, f, 32 );
+    SDL_Point sc[cc.size()];
+    for (std::size_t i = 0; i < cc.size(); ++i)
+    {
+        cc[i].r = R;
+        sc[i] = surf_to_screen( n, cc[i], center);
+    }
+    draw_filled_polygon( sc, 32 );
+
+    set_coloru( color );
+
     // набор точек от 0 до 2pi
     int size = 65;
     std::vector<vec3s> v(size);
@@ -147,17 +169,6 @@ void draw_sphere( vec3s n, SDL_Point center, float R, field & f ) {
     draw_path( n, center, {{0,0,0}, {1.2f*R, M_PI/2, M_PI / 2}});
     set_color3u(0, 0, 255);
     draw_path( n, center, {{0,0,0}, {1.2f*R, 0, 0}});
-
-    // отрисуем для теста одну клетку
-    set_color3u(255, 0, 255);
-    auto cc = cell_contour( {8, 0}, f, 32 );
-    SDL_Point sc[cc.size()];
-    for (std::size_t i = 0; i < cc.size(); ++i)
-    {
-        cc[i].r = R;
-        sc[i] = surf_to_screen( n, cc[i], center);
-    }
-    draw_filled_polygon( sc, 32 );
 }
 
 int draw_filled_polygon( const SDL_Point* vs, const int n ) {

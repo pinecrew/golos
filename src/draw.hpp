@@ -12,6 +12,7 @@ enum COLOR {
 };
 
 void draw_init( SDL_Renderer * render );
+Uint32 get_coloru( void );
 int set_coloru( Uint32 color );
 int set_color3u( Uint8 red, Uint8 green, Uint8 blue );
 int set_color4u( Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha );
