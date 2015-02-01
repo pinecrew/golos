@@ -148,6 +148,10 @@ void draw_sphere( vec3s n, SDL_Point center, float R, field & f ) {
     draw_path( n, center, {{0,0,0}, {1.2f*R, 0, 0}});
 }
 
+bool SDL_point_compare_y( const SDL_Point & a, const SDL_Point & b ) {
+    return a.y < b.y;
+}
+
 int draw_filled_polygon( const SDL_Point* vs, const int n ) {
     int min_y, max_y, result, counts;
     int ind1, ind2, x1, x2, y1, y2;
@@ -157,8 +161,9 @@ int draw_filled_polygon( const SDL_Point* vs, const int n ) {
     if ( vs == nullptr || n < 3 ) {
         return -1;
     }
-    min_y = std::min( vs[0].y, vs[n].y );
-    max_y = std::max( vs[0].y, vs[n].y );
+    // нужно тестирование
+    min_y = std::min_element( vs, vs + n, SDL_point_compare_y )->y;
+    max_y = std::max_element( vs, vs + n, SDL_point_compare_y )->y;
     result = 0;
     for ( int y = min_y; y < max_y; y++ ) {
         counts = 0;
