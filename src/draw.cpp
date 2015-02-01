@@ -127,16 +127,25 @@ void draw_path(vec3s n, SDL_Point center, std::vector<vec3s> vs) {
 void draw_sphere( vec3s n, SDL_Point center, float R, field & f ) {
     Uint32 color = get_coloru();
 
-    // отрисуем для теста одну клетку
+    // отрисуем все клетки для теста
     set_color3u(255, 0, 255);
-    auto cc = cell_contour( {8, 0}, f, 32 );
-    SDL_Point sc[cc.size()];
-    for (std::size_t i = 0; i < cc.size(); ++i)
-    {
-        cc[i].r = R;
-        sc[i] = surf_to_screen( n, cc[i], center);
+    for ( size_t i = 0; i < f.f.size(); i++ ) {
+        for ( size_t j = 0; j < f.f[i].size(); j++ ) {
+            if ( f.f[i][j] ) {
+                auto cc = cell_contour( { (int)i, (int)j }, f, 32 );
+                SDL_Point sc[cc.size()];
+                for (std::size_t i = 0; i < cc.size(); ++i)
+                {
+                    cc[i].r = R;
+                    sc[i] = surf_to_screen( n, cc[i], center);
+                }
+                if ( n * cc[0] >= 0 ) { // так не видно косяков
+                // if ( visible( n, cc[0] ) ) {
+                    draw_filled_polygon( sc, 32 );
+                }
+            }
+        }
     }
-    draw_filled_polygon( sc, 32 );
 
     set_coloru( color );
 

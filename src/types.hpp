@@ -18,6 +18,7 @@ struct vec3d {
 
 struct cell {
     int i, j;
+    cell( int _i, int _j ) : i( _i ), j( _j ) {};
 };
 
 struct field {

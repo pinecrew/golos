@@ -139,6 +139,11 @@ void game_init( void ) {
     SDL_SetRenderDrawBlendMode( render, SDL_BLENDMODE_BLEND );
     draw_init( render );
     font_load( render, &ft, "./data/font.cfg" );
+
+    // тестовое заполнение
+    for ( size_t i = 0; i < 100; i++ ) {
+        f.f[rand()%16][rand()%32] = true;
+    }
 }
 
 int main( int argc, char * argv[] ) {
