@@ -1,5 +1,6 @@
-#include "draw.hpp"
 #include <algorithm>
+#include "draw.hpp"
+#include "logics.hpp"
 
 SDL_Renderer * _render = NULL;
 
@@ -146,10 +147,17 @@ void draw_sphere( vec3s n, SDL_Point center, float R, field & f ) {
     draw_path( n, center, {{0,0,0}, {1.2f*R, M_PI/2, M_PI / 2}});
     set_color3u(0, 0, 255);
     draw_path( n, center, {{0,0,0}, {1.2f*R, 0, 0}});
-}
 
-bool SDL_point_compare_y( const SDL_Point & a, const SDL_Point & b ) {
-    return a.y < b.y;
+    // отрисуем для теста одну клетку
+    set_color3u(255, 0, 255);
+    auto cc = cell_contour( {8, 0}, f, 32 );
+    SDL_Point sc[cc.size()];
+    for (std::size_t i = 0; i < cc.size(); ++i)
+    {
+        cc[i].r = R;
+        sc[i] = surf_to_screen( n, cc[i], center);
+    }
+    draw_filled_polygon( sc, 32 );
 }
 
 int draw_filled_polygon( const SDL_Point* vs, const int n ) {
@@ -162,8 +170,12 @@ int draw_filled_polygon( const SDL_Point* vs, const int n ) {
         return -1;
     }
     // нужно тестирование
-    min_y = std::min_element( vs, vs + n, SDL_point_compare_y )->y;
-    max_y = std::max_element( vs, vs + n, SDL_point_compare_y )->y;
+    min_y = std::min_element( vs, vs + n,
+            [](const SDL_Point & a, const SDL_Point & b)
+            { return a.y < b.y; } ) -> y;
+    max_y = std::max_element( vs, vs + n,
+            [](const SDL_Point & a, const SDL_Point & b)
+            { return a.y < b.y; } ) -> y;
     result = 0;
     for ( int y = min_y; y < max_y; y++ ) {
         counts = 0;
@@ -188,8 +200,11 @@ int draw_filled_polygon( const SDL_Point* vs, const int n ) {
             } else {
                 continue;
             }
-            if ( ( ( y >= y1 ) && ( y < y2 ) ) || ( ( y == max_y ) && ( y > y1 ) && ( y <= y2 ) ) ) {
-                polygons[counts++] = ( ( 65536 * ( y - y1 ) ) / ( y2 - y1 ) ) * ( x2 - x1 ) + ( 65536 * x1 );
+            if ( ( ( y >= y1 ) && ( y < y2 ) ) ||
+                 ( ( y == max_y ) && ( y > y1 ) && ( y <= y2 ) ) ) {
+                polygons[counts++] =
+                    ( ( 65536 * ( y - y1 ) ) / ( y2 - y1 ) ) * ( x2 - x1 ) +
+                    ( 65536 * x1 );
             }
         }
         std::sort( polygons, polygons + counts );

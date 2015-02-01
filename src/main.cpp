@@ -105,7 +105,7 @@ void game_loop( void ) {
 }
 
 void game_render( void ) {
-    const size_t BUFFER_SIZE = 128;
+    const std::size_t BUFFER_SIZE = 128;
     wchar_t buffer[BUFFER_SIZE];
 
     SDL_RenderClear( render );
