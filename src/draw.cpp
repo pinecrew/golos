@@ -133,6 +133,7 @@ void draw_sphere( vec3s n, SDL_Point center, float R, field & f ) {
         for ( size_t j = 0; j < f.f[i].size(); j++ ) {
             if ( f.f[i][j] ) {
                 auto cc = cell_contour( { (int)i, (int)j }, f, 32 );
+                cc[0].r = R;
                 if ( n * cc[0] >= 0 ) { // так не видно косяков
                 // if ( visible( n, cc[0] ) ) {
                     SDL_Point sc[cc.size()];
