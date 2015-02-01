@@ -4,7 +4,7 @@
 #include "font.hpp"
 
 const char * game_name = "Game Of Life On Surface";
-const wchar_t tmp_str[] = L"FPS: %.2f";
+const wchar_t tmp_str[] = L"FPS: %.2f; theta: %.2f; phi: %.2f";
 int screen_width = 640;
 int screen_height = 640;
 float R = 200;
@@ -111,7 +111,7 @@ void game_render( void ) {
     SDL_RenderClear( render );
     set_coloru( COLOR_WHITE );
     draw_sphere( view_direction, {screen_width / 2, screen_height / 2}, R, f );
-    swprintf( buffer, BUFFER_SIZE, tmp_str, get_fps() );
+    swprintf( buffer, BUFFER_SIZE, tmp_str, get_fps(), view_direction.theta, view_direction.phi );
     font_draw( render, ft, buffer, 5, screen_height - 16 );
     set_coloru( COLOR_BLACK );
     SDL_RenderPresent( render );
