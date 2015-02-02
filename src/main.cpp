@@ -1,12 +1,31 @@
 #include <cstdio>
+#include <ctime>
 #include <SDL2/SDL.h>
 #include "draw.hpp"
 #include "font.hpp"
+#include "logics.hpp"
 
 const char * game_name = "Game Of Life On Surface";
-const wchar_t tmp_str[] = L"FPS: %.2f; theta: %.2f; phi: %.2f";
+const wchar_t tmp_str[] = L"(%s) FPS: %.2f; theta: %.2f; phi: %.2f; delay %d";
+const wchar_t * game_status[] = {
+    (const wchar_t *) "pause",
+    (const wchar_t *) "play"
+};
+const wchar_t help_info[] =
+    L"help menu:\n\n"
+    L"   F1 -- this menu\n"
+    L"  ESC -- quit\n"
+    L"SPACE -- play/pause\n"
+    L"    F -- random fill\n"
+    L"    > -- speed up\n"
+    L"    < -- speed down\n"
+    L" []{} -- rotate";
+int game_counter = 0, MAX_COUNT = 5;
 int screen_width = 640;
 int screen_height = 640;
+const int border_size = 24;
+const int help_box_width = 200;
+const int help_box_height = 80;
 float R = 200;
 int px, py;
 vec3s delta = { 0, 0, 0 };
@@ -14,6 +33,8 @@ vec3s view_direction = {1, M_PI / 4, 0 };
 field f(16, 32);
 bool quit_flag = false;
 bool button_set = false;
+bool game_step = false;
+bool help_flag = false;
 SDL_Window * window = NULL;
 SDL_Renderer * render = NULL;
 SDL_Event event;
@@ -38,6 +59,12 @@ float get_fps( void ) {
     return FpsRate;
 }
 
+void random_fill( void ) {
+    for ( size_t i = 0; i < 128; i++ ) {
+        f.f[rand()%16][rand()%32] = true;
+    }
+}
+
 void game_event( SDL_Event * event ) {
     SDL_PollEvent( event );
     switch ( event->type ) {
@@ -55,6 +82,13 @@ void game_event( SDL_Event * event ) {
                 case SDLK_ESCAPE:
                     quit_flag = true;
                     break;
+                case SDLK_SPACE:
+                    game_step = !game_step;
+                    break;
+                case SDLK_F1:
+                    help_flag = !help_flag;
+                    event->key.keysym.sym = 0;
+                    break;
                 case SDLK_UP:
                     view_direction.theta -= 0.01f;
                     break;
@@ -67,9 +101,21 @@ void game_event( SDL_Event * event ) {
                 case SDLK_RIGHT:
                     view_direction.phi += 0.01f;
                     break;
+                case SDLK_PERIOD:
+                    if ( MAX_COUNT > 0 ) {
+                        MAX_COUNT -= 1;
+                    }
+                    break;
+                case SDLK_COMMA:
+                    MAX_COUNT += 1;
+                    break;
+                case SDLK_f:
+                    random_fill();
+                    break;
                 default:
                     break;
             }
+            break;
         case SDL_MOUSEMOTION:
             if ( button_set ) {
                 delta.phi = ( event->button.x - px ) / 100.0f;
@@ -101,7 +147,12 @@ void game_event( SDL_Event * event ) {
 }
 
 void game_loop( void ) {
-    // insert code
+    if ( game_step && game_counter >= MAX_COUNT ) {
+        nextStep( f );
+        game_counter = 0;
+    } else {
+        game_counter++;
+    }
 }
 
 void game_render( void ) {
@@ -111,8 +162,17 @@ void game_render( void ) {
     SDL_RenderClear( render );
     set_coloru( COLOR_WHITE );
     draw_sphere( view_direction, {screen_width / 2, screen_height / 2}, R, f );
-    swprintf( buffer, BUFFER_SIZE, tmp_str, get_fps(), view_direction.theta, view_direction.phi );
+    swprintf( buffer, BUFFER_SIZE, tmp_str, game_status[int(game_step)], get_fps(), 
+              view_direction.theta, view_direction.phi, MAX_COUNT );
     font_draw( render, ft, buffer, 5, screen_height - 16 );
+    if ( help_flag ) {
+        set_color4u( 0x00, 0x00, 0xff, 0x96 );
+        draw_rectangle_param( ( screen_width - help_box_width ) / 2,
+                              ( screen_height - help_box_height ) / 2,
+                              help_box_width, help_box_height, true );
+        font_draw( render, ft, help_info, ( screen_width - help_box_width ) / 2,
+                   ( screen_height - help_box_height ) / 2 + 4 );
+    }
     set_coloru( COLOR_BLACK );
     SDL_RenderPresent( render );
 }
@@ -139,11 +199,8 @@ void game_init( void ) {
     SDL_SetRenderDrawBlendMode( render, SDL_BLENDMODE_BLEND );
     draw_init( render );
     font_load( render, &ft, "./data/font.cfg" );
-
-    // тестовое заполнение
-    for ( size_t i = 0; i < 100; i++ ) {
-        f.f[rand()%16][rand()%32] = true;
-    }
+    srand( time( NULL ) );
+    random_fill();
 }
 
 int main( int argc, char * argv[] ) {
