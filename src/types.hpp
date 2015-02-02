@@ -21,11 +21,13 @@ struct cell {
     cell( int _i, int _j ) : i( _i ), j( _j ) {};
 };
 
-struct field {
-    std::size_t width, height;
-    std::vector< std::vector< bool > > f;
-    std::vector< bool > operator[](std::size_t i);
-    field(std::size_t h, std::size_t w);
+class field {
+    private:
+        std::vector< std::vector< bool > > f;
+    public:
+        std::size_t width, height;
+        std::vector< bool > & operator[](std::size_t i);
+        field(std::size_t h, std::size_t w);
 };
 
 SDL_Point surf_to_screen( vec3s n, vec3s sp, SDL_Point center );

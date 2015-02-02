@@ -61,7 +61,7 @@ float get_fps( void ) {
 
 void random_fill( void ) {
     for ( size_t i = 0; i < 128; i++ ) {
-        f.f[rand()%16][rand()%32] = true;
+        f[rand()%16][rand()%32] = true;
     }
 }
 
@@ -162,7 +162,7 @@ void game_render( void ) {
     SDL_RenderClear( render );
     set_coloru( COLOR_WHITE );
     draw_sphere( view_direction, {screen_width / 2, screen_height / 2}, R, f );
-    swprintf( buffer, BUFFER_SIZE, tmp_str, game_status[int(game_step)], get_fps(), 
+    swprintf( buffer, BUFFER_SIZE, tmp_str, game_status[int(game_step)], get_fps(),
               view_direction.theta, view_direction.phi, MAX_COUNT );
     font_draw( render, ft, buffer, 5, screen_height - 16 );
     if ( help_flag ) {

@@ -66,10 +66,10 @@ void nextStep(field & f){
     //    поэтому проще всего посчитать сумму в этой строке
     std::size_t s = 0;
     for (std::size_t i = 0; i < f.width; ++i)
-        s += f.f[0][i];
+        s += f[0][i];
 
     for (std::size_t i = 0; i < f.width; ++i)
-        if ( f.f[0][i] ){
+        if ( f[0][i] ){
             tmp[0][i] = s - 1;
             tmp[1][( i + f.width - 1 ) % f.width] += 1;
             tmp[1][i] += 1;
@@ -81,13 +81,12 @@ void nextStep(field & f){
     // 2. Между первой и последней
     for (std::size_t j = 1; j < f.height - 1; ++j)
         for (std::size_t i = 0; i < f.width; ++i)
-            if ( f.f[j][i] ){
+            if ( f[j][i] ){
                 tmp[j - 1][( i + f.width - 1 ) % f.width] += 1;
                 tmp[j - 1][i]                             += 1;
                 tmp[j - 1][( i + f.width + 1 ) % f.width] += 1;
 
                 tmp[j][( i + f.width - 1 ) % f.width] += 1;
-                tmp[j][i]                             += 1;
                 tmp[j][( i + f.width + 1 ) % f.width] += 1;
 
                 tmp[j + 1][( i + f.width - 1 ) % f.width] += 1;
@@ -99,11 +98,11 @@ void nextStep(field & f){
     std::size_t p = f.height - 1;
     s = 0;
     for (std::size_t i = 0; i < f.width; ++i)
-        s += f.f[p][i];
+        s += f[p][i];
 
     for (std::size_t i = 0; i < f.width; ++i)
-        if ( f.f[0][i] ){
-            tmp[0][i] += s - 1;
+        if ( f[p][i] ){
+            tmp[p][i] += s - 1;
 
             tmp[p - 1][( i + f.width - 1 ) % f.width] += 1;
             tmp[p - 1][i] += 1;
@@ -115,6 +114,9 @@ void nextStep(field & f){
     // 4. Установка нового состояния
     for (std::size_t j = 0; j < f.height; ++j)
         for (std::size_t i = 0; i < f.width; ++i)
-            f.f[j][i] = (tmp[j][i] == 2 && f.f[j][i]) || (tmp[j][i] == 3);
+            f[j][i] = (tmp[j][i] == 2 && f[j][i]) || (tmp[j][i] == 3);
+
+    for (std::size_t i = 0; i < f.height; ++i)
+        delete[] tmp[i];
     delete[] tmp;
 }

@@ -139,8 +139,8 @@ void draw_sphere( vec3s n, SDL_Point center, float R, field & f ) {
 
     // отрисуем все клетки для теста
     set_color3u(255, 0, 255);
-    for ( std::size_t i = 0; i < f.height; i++ ) {
-        for ( std::size_t j = 0; j < f.width; j++ ) {
+    for ( std::size_t i = 0; i < f.height; ++i ) {
+        for ( std::size_t j = 0; j < f.width; ++j ) {
             if ( f[i][j] ) {
                 auto cc = cell_contour( { (int)i, (int)j }, f, 32 );
                 SDL_Point sc[cc.size()];
