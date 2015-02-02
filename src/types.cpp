@@ -53,6 +53,6 @@ SDL_Point surf_to_screen( vec3s n, vec3s sp, SDL_Point center ) {
 }
 
 bool visible ( vec3s n, vec3s sp ) {
-    float threshold = 0.1f;
-    return ( n * sp >= -threshold * sp.r ); // хак для увеличения области видимости
+    return ( n * sp >= 0 ); // хак для увеличения области видимости
 }
+

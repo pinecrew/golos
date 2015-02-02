@@ -107,7 +107,6 @@ int draw_aaline( int x1, int y1, int x2, int y2 ) {
 
 void draw_path(vec3s n, SDL_Point center, std::vector<vec3s> vs) {
     // отрисовываем путь
-    // пока без проверки невидимых линий
     SDL_Point prev;
     bool pe = false;
     for ( auto v: vs ) {
@@ -129,21 +128,19 @@ void draw_sphere( vec3s n, SDL_Point center, float R, field & f ) {
 
     // отрисуем все клетки для теста
     set_color3u(255, 0, 255);
-    for ( size_t i = 0; i < f.f.size(); i++ ) {
-        for ( size_t j = 0; j < f.f[i].size(); j++ ) {
-            if ( f.f[i][j] ) {
+    for ( std::size_t i = 0; i < f.height; i++ ) {
+        for ( std::size_t j = 0; j < f.width; j++ ) {
+            if ( f[i][j] ) {
                 auto cc = cell_contour( { (int)i, (int)j }, f, 32 );
-                cc[0].r = R;
-                if ( n * cc[0] >= 0 ) { // так не видно косяков
-                // if ( visible( n, cc[0] ) ) {
-                    SDL_Point sc[cc.size()];
-                    for (std::size_t i = 0; i < cc.size(); ++i)
-                    {
-                        cc[i].r = R;
-                        sc[i] = surf_to_screen( n, cc[i], center);
-                    }
-                    draw_filled_polygon( sc, 32 );
+                SDL_Point sc[cc.size()];
+                int i = 0;
+                for (auto v : cc)
+                {
+                    v.r = R;
+                    if ( visible( n, v ) )
+                        sc[i++] = surf_to_screen( n, v, center);
                 }
+                draw_filled_polygon( sc, i );
             }
         }
     }
@@ -170,6 +167,14 @@ void draw_sphere( vec3s n, SDL_Point center, float R, field & f ) {
         float p = i * M_PI / f.height;
         for (int i = 0; i < size; ++i) {v[i].theta = p;};
         draw_path( n, center, v);
+    }
+    // большая окружность для красоты
+    SDL_Point p1 = { center.x + ( int )R, center.y }, p2;
+    for (int i = 1; i < size; ++i) {
+        p2.x = center.x + R * cos( 2 * M_PI * i / ( size - 1 ) );
+        p2.y = center.y - R * sin( 2 * M_PI * i / ( size - 1 ) );
+        draw_aaline( p1.x, p1.y, p2.x, p2.y );
+        p1 = p2;
     }
 
     // оси координат (для проверки корректности отрисовки)
