@@ -39,6 +39,17 @@ int set_color4u( Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha ) {
     return SDL_SetRenderDrawColor( _render, red, green, blue, alpha );
 }
 
+void draw_rectangle_param( int x, int y, int w, int h, bool fill ) {
+    SDL_Rect rect = { x, y, w, h };
+
+    if ( fill ) {
+        SDL_RenderFillRect( _render, &rect );
+    } else {
+        SDL_RenderDrawRect( _render, &rect );
+        SDL_RenderDrawPoint( _render, x + w - 1, y + h - 1 );
+    }
+}
+
 int draw_aaline( int x1, int y1, int x2, int y2 ) {
     Uint32 intshift, erracc, erradj, erracctmp, wgt;
     int dx, dy, tmp, xdir, y0p1, x0pxdir, result;
