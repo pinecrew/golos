@@ -57,9 +57,9 @@ void toggle( field & f, vec3s & p ){
 
 void nextStep(field & f){
     // массив для подсчёта соседей
-    auto tmp = new char*[f.height];
+    auto tmp = new std::vector<char>[f.height];
     for (std::size_t i = 0; i < f.height; ++i)
-        tmp[i] = new char[f.width];
+        tmp[i].assign(f.width, 0);
 
     // 1. Обрабатываем первую строку
     //    в ней все соседи друг другу, так как есть общая вершина (полюс)
@@ -116,7 +116,5 @@ void nextStep(field & f){
         for (std::size_t i = 0; i < f.width; ++i)
             f[j][i] = (tmp[j][i] == 2 && f[j][i]) || (tmp[j][i] == 3);
 
-    for (std::size_t i = 0; i < f.height; ++i)
-        delete[] tmp[i];
     delete[] tmp;
 }
