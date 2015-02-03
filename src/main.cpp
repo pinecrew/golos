@@ -5,6 +5,7 @@
 #include "font.hpp"
 #include "logics.hpp"
 
+const int SDL_RENDER_DRIVER = 3; // use software renderer
 const char * game_name = "Game Of Life On Surface";
 const wchar_t tmp_str[] = L"(%s) FPS: %.2f; theta: %.2f; phi: %.2f; delay %d";
 const wchar_t * game_status[] = {
@@ -41,7 +42,7 @@ SDL_Event event;
 font_table_t * ft = NULL;
 
 void game_send_error( int code ) {
-    printf( "[error]: %s\n", SDL_GetError() );
+    SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", SDL_GetError(), NULL );
     exit( code );
 }
 
@@ -191,8 +192,8 @@ void game_init( void ) {
     if ( window == NULL ) {
         game_send_error( EXIT_FAILURE );
     }
-    render = SDL_CreateRenderer( window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC |
-                                 SDL_RENDERER_TARGETTEXTURE );
+    render = SDL_CreateRenderer( window, SDL_RENDER_DRIVER, SDL_RENDERER_ACCELERATED | 
+                                 SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE );
     if ( render == NULL ) {
         game_send_error( EXIT_FAILURE );
     }
@@ -204,11 +205,14 @@ void game_init( void ) {
 }
 
 int main( int argc, char * argv[] ) {
+    Uint32 FPS_MAX = 1000 / 110; // ~60 FPS in software rendering
+
     game_init();
     while ( quit_flag == false ) {
         game_event( &event );
         game_loop();
         game_render();
+        SDL_Delay( FPS_MAX );
     }
     game_destroy();
     return EXIT_SUCCESS;
