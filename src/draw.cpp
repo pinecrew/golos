@@ -200,7 +200,6 @@ void draw_sphere( vec3s n, SDL_Point center, float R, field & f ) {
 int draw_filled_polygon( const SDL_Point* vs, const int n ) {
     int min_y, max_y, result, counts;
     int ind1, ind2, x1, x2, y1, y2;
-    int * polygons = new int [n];
     int xa, xb;
 
     if ( vs == nullptr || n < 3 ) {
@@ -214,6 +213,7 @@ int draw_filled_polygon( const SDL_Point* vs, const int n ) {
             [](const SDL_Point & a, const SDL_Point & b)
             { return a.y < b.y; } ) -> y;
     result = 0;
+    int * polygons = new int [n];
     for ( int y = min_y; y < max_y; y++ ) {
         counts = 0;
         for ( int i = 0; i < n; i++ ) {
