@@ -2,10 +2,9 @@
 #include <iostream>
 #include "types.hpp"
 
-field::field(std::size_t h, std::size_t w){
+field::field(std::size_t h, std::size_t w) : f(h) {
     this->width = w;
     this->height = h;
-    this->f = std::vector< std::vector < bool > >(h);
     for (std::size_t i = 0; i < h; ++i)
         this->f[i].assign(w, false);
 }
@@ -15,9 +14,12 @@ std::vector< bool > & field::operator[](std::size_t i){
 }
 
 vec3d::vec3d( vec3s v ) {
-    this->x = v.r * sin( v.theta ) * cos ( v.phi );
-    this->y = v.r * sin( v.theta ) * sin ( v.phi );
-    this->z = v.r * cos( v.theta );
+    float st, ct, sp, cp;
+    sincosf(v.theta, &st, &ct);
+    sincosf(v.phi, &sp, &cp);
+    this->x = v.r * st * cp;
+    this->y = v.r * st * sp;
+    this->z = v.r * ct;
 }
 
 float vec3d::operator*( vec3d rhs ) {
