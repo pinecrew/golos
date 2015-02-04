@@ -204,17 +204,16 @@ void game_init( void ) {
 }
 
 int main( int argc, char * argv[] ) {
-    float start, stop;
+    float current = 0.0f, last = 0.0f;
 
-    start = stop = 0;
     game_init();
     while ( quit_flag == false ) {
         game_event( &event );
-        start = (float) SDL_GetTicks();
-        if ( start > stop + 1000.0f / 60.0f ) {
+        current = (float) SDL_GetTicks();
+        if ( current > last + 1000.0f / 60.0f ) {
             game_loop();
             game_render();
-            stop = start;
+            last = current;
         }
     }
     game_destroy();
