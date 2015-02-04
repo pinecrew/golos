@@ -58,3 +58,22 @@ bool visible ( vec3s n, vec3s sp ) {
     return ( n * sp >= 0 ); // хак для увеличения области видимости
 }
 
+vec3s screen_to_surf( vec3s n, float r, SDL_Point p, SDL_Point c ) {
+   float b1 = ( p.x - c.x ) / r,
+         b2 = ( c.y - p.y ) / r,
+         a1 = cos( n.theta ),
+         a2 = sin( n.theta );
+   float d = a1 * sqrt( 1 - b1 * b1 - b2 * b2 );
+   float ct1 = ( b2 * a2 + d ), ct2 = ( b2 * a2 - d );
+   float st1 = sqrt( 1 - ct1 * ct1 ), st2 = ( 1 - ct2 * ct2 );
+   float sp1 = b1 / st1, sp2 = b1 / st2;
+   float cp1 = ( a2 * ct1 - b2 ) / a1 / st1, cp2 = ( a2 * ct2 - b2 ) / a1 / st2;
+   vec3s s1 = {1, atan2f(st1, ct1), atan2f(sp1, cp1)};
+   vec3s s2 = {1, atan2f(st2, ct2), atan2f(sp2, cp2)};
+   vec3s s;
+   if ( visible(n, s1) )
+       s = s1;
+   else
+       s = s2;
+   return s;
+}

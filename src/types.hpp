@@ -31,4 +31,5 @@ class field {
 };
 
 SDL_Point surf_to_screen( vec3s n, vec3s sp, SDL_Point center );
+vec3s screen_to_surf( vec3s n, float r, SDL_Point p, SDL_Point c );
 bool visible( vec3s n, vec3s v );
