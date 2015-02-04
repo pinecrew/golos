@@ -13,7 +13,7 @@ std::vector< bool > & field::operator[](std::size_t i){
     return this->f[i];
 }
 
-vec3d::vec3d( vec3s v ) {
+vec3d::vec3d( const vec3s & v ) {
     float st, ct, sp, cp;
     sincosf(v.theta, &st, &ct);
     sincosf(v.phi, &sp, &cp);
@@ -22,11 +22,11 @@ vec3d::vec3d( vec3s v ) {
     this->z = v.r * ct;
 }
 
-float vec3d::operator*( vec3d rhs ) {
+float vec3d::operator*( const vec3d & rhs ) {
     return this->x * rhs.x + this->y * rhs.y + this->z * rhs.z;
 }
 
-float vec3s::operator*( vec3s rhs ) {
+float vec3s::operator*( const vec3s & rhs ) {
     return vec3d( *this ) * vec3d ( rhs );
 }
 
