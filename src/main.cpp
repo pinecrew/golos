@@ -32,7 +32,8 @@ vec3s delta = { 0, 0, 0 };
 vec3s view_direction = {1, M_PI / 4, 0 };
 field f(16, 32);
 bool quit_flag = false;
-bool button_set = false;
+bool button_left_set = false;
+bool button_right_set = false;
 bool game_step = false;
 bool help_flag = false;
 SDL_Window * window = nullptr;
@@ -117,7 +118,7 @@ void game_event( SDL_Event * event ) {
             }
             break;
         case SDL_MOUSEMOTION:
-            if ( button_set ) {
+            if ( button_left_set ) {
                 delta.phi = ( event->button.x - px ) / 100.0f;
                 delta.theta = ( event->button.y - py ) / 100.0f;
                 px = event->button.x;
@@ -128,18 +129,27 @@ void game_event( SDL_Event * event ) {
         case SDL_MOUSEBUTTONDOWN:
             switch ( event->button.button ) {
                 case SDL_BUTTON_LEFT:
-                    if ( button_set == false ) {
+                    if ( button_left_set == false ) {
                         px = event->button.x;
                         py = event->button.y;
                     }
+                    button_left_set = true;
+                    break;
+                case SDL_BUTTON_RIGHT:
+                    if ( button_right_set == false ) {
+                        SDL_Point center = { screen_width / 2, screen_height / 2 };
+                        SDL_Point mouse = { event->button.x, event->button.y };
+                        vec3s point = screen_to_surf( view_direction, R, mouse, center );
+                        toggle( f, point );
+                    }
+                    button_right_set = true;
                     break;
                 default:
                     break;
             }
-            button_set = true;
             break;
         case SDL_MOUSEBUTTONUP:
-            button_set = false;
+            button_left_set = button_right_set = false;
             break;
         default:
             break;
