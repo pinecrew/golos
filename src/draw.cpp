@@ -2,7 +2,7 @@
 #include "draw.hpp"
 #include "logics.hpp"
 
-SDL_Renderer * _render = NULL;
+SDL_Renderer * _render = nullptr;
 
 void draw_init( SDL_Renderer * render ) {
     _render = render;
@@ -11,7 +11,7 @@ void draw_init( SDL_Renderer * render ) {
 Uint32 get_coloru( void ) {
     Uint8 r, g, b;
 
-    SDL_GetRenderDrawColor( _render, &r, &g, &b, NULL );
+    SDL_GetRenderDrawColor( _render, &r, &g, &b, nullptr );
     return ( r << 16 ) + ( g << 8 ) + b;
 }
 

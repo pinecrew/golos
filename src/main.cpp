@@ -35,13 +35,13 @@ bool quit_flag = false;
 bool button_set = false;
 bool game_step = false;
 bool help_flag = false;
-SDL_Window * window = NULL;
-SDL_Renderer * render = NULL;
+SDL_Window * window = nullptr;
+SDL_Renderer * render = nullptr;
 SDL_Event event;
-font_table_t * ft = NULL;
+font_table_t * ft = nullptr;
 
 void game_send_error( int code ) {
-    SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", SDL_GetError(), NULL );
+    SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", SDL_GetError(), nullptr );
     exit( code );
 }
 
@@ -188,17 +188,17 @@ void game_init( void ) {
     SDL_Init( SDL_INIT_VIDEO | SDL_INIT_EVENTS );
     window = SDL_CreateWindow( game_name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                screen_width, screen_height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
-    if ( window == NULL ) {
+    if ( window == nullptr ) {
         game_send_error( EXIT_FAILURE );
     }
     render = SDL_CreateRenderer( window, SDL_RENDER_DRIVER, SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE );
-    if ( render == NULL ) {
+    if ( render == nullptr ) {
         game_send_error( EXIT_FAILURE );
     }
     SDL_SetRenderDrawBlendMode( render, SDL_BLENDMODE_BLEND );
     draw_init( render );
     font_load( render, &ft, "./data/font.cfg" );
-    srand( time( NULL ) );
+    srand( time( nullptr ) );
     random_fill();
 }
 
@@ -207,9 +207,9 @@ int main( int argc, char * argv[] ) {
 
     game_init();
     while ( quit_flag == false ) {
-        game_event( &event );
         current = (float) SDL_GetTicks();
         if ( current > last + 1000.0f / 60.0f ) {
+            game_event( &event );
             game_loop();
             game_render();
             last = current;

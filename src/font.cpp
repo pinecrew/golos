@@ -4,8 +4,8 @@ const char NULL_STR = '\0';
 
 int font_load( SDL_Renderer * r, font_table_t ** t, const char * font ) {
     unsigned int text_size = 0, abc_size = 0;
-    SDL_Texture *tex = NULL;
-    font_table_t *a = NULL;
+    SDL_Texture *tex = nullptr;
+    font_table_t *a = nullptr;
     wint_t current = 0;
     char * text_name;
     size_t load = 1;
@@ -15,7 +15,7 @@ int font_load( SDL_Renderer * r, font_table_t ** t, const char * font ) {
     a = new font_table_t;
     *t = a;
     f = fopen( font, "rb" );
-    if ( f == NULL ) {
+    if ( f == nullptr ) {
         return A_ERROR_OPEN_FILE;
     }
     fread( &( text_size ), sizeof(int), 1, f );
@@ -28,11 +28,11 @@ int font_load( SDL_Renderer * r, font_table_t ** t, const char * font ) {
     tex = IMG_LoadTexture( r, text_name );
     delete[] text_name;
     a->font = tex;
-    if ( tex == NULL ) {
+    if ( tex == nullptr ) {
         fclose( f );
         return A_ERROR_LOAD_TEXTURE;
     }
-    SDL_QueryTexture( tex, NULL, NULL, &( a->f_width ), &( a->f_height ) );
+    SDL_QueryTexture( tex, nullptr, nullptr, &( a->f_width ), &( a->f_height ) );
     fseek( f, sizeof(int) * 4 + text_size + 1, SEEK_SET );
     do {
         load = fread( &current, 2, 1, f );
