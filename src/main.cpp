@@ -24,7 +24,6 @@ const wchar_t help_info[] =
 int game_counter = 0, MAX_COUNT = 5;
 int screen_width = 640;
 int screen_height = 640;
-const int border_size = 24;
 const int help_box_width = 200;
 const int help_box_height = 80;
 float R = 200;
@@ -205,14 +204,18 @@ void game_init( void ) {
 }
 
 int main( int argc, char * argv[] ) {
-    Uint32 FPS_MAX = 1000 / 110; // ~60 FPS in software rendering
+    float start, stop;
 
+    start = stop = 0;
     game_init();
     while ( quit_flag == false ) {
         game_event( &event );
-        game_loop();
-        game_render();
-        SDL_Delay( FPS_MAX );
+        start = (float) SDL_GetTicks();
+        if ( start > stop + 1000.0f / 60.0f ) {
+            game_loop();
+            game_render();
+            stop = start;
+        }
     }
     game_destroy();
     return EXIT_SUCCESS;
