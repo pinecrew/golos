@@ -20,6 +20,7 @@ const wchar_t help_info[] =
     L"  ESC -- quit\n"
     L"SPACE -- play/pause\n"
     L"    F -- random fill\n"
+    L"    R -- clear field\n"
     L"    > -- speed up\n"
     L"    < -- speed down\n"
     L" []{} -- rotate";
@@ -27,7 +28,7 @@ int game_counter = 0, MAX_COUNT = 5;
 int screen_width = 640;
 int screen_height = 640;
 const int help_box_width = 200;
-const int help_box_height = 80;
+const int help_box_height = 90;
 float R = 200;
 int px, py;
 vec3s delta = { 0, 0, 0 };
@@ -65,6 +66,19 @@ float get_fps( void ) {
 void random_fill( void ) {
     for ( size_t i = 0; i < 128; i++ ) {
         f[rand()%16][rand()%32] = true;
+    }
+}
+
+void set_cell( int x, int y, bool create_flag ) {
+    SDL_Point center = { screen_width / 2, screen_height / 2 };
+    SDL_Point mouse = { x, y };
+    if ( sqr( x - center.x ) + sqr( y - center. y ) < sqr( R ) ) {
+        vec3s point = screen_to_surf( view_direction, R, mouse, center );
+        if ( create_flag ) {
+            create( f, point );
+        } else {
+            toggle( f, point );
+        }
     }
 }
 
@@ -115,6 +129,13 @@ void game_event( SDL_Event * event ) {
                 case SDLK_f:
                     random_fill();
                     break;
+                case SDLK_r:
+                    for ( std::size_t i = 0; i < f.width; i++ ) {
+                        for ( std::size_t j = 0; j < f.height; j++ ) {
+                            f[j][i] = false;
+                        }
+                    }
+                    break;
                 default:
                     break;
             }
@@ -126,6 +147,9 @@ void game_event( SDL_Event * event ) {
                 px = event->button.x;
                 py = event->button.y;
                 view_direction -= delta;
+            }
+            if ( button_right_set ) {
+                set_cell( event->button.x, event->button.y, true );
             }
             break;
         case SDL_MOUSEBUTTONDOWN:
@@ -139,13 +163,7 @@ void game_event( SDL_Event * event ) {
                     break;
                 case SDL_BUTTON_RIGHT:
                     if ( button_right_set == false ) {
-                        SDL_Point center = { screen_width / 2, screen_height / 2 };
-                        SDL_Point mouse = { event->button.x, event->button.y };
-                        if ( sqr( mouse.x - center.x ) +
-                             sqr( mouse.y - center. y ) < sqr( R ) ) {
-                            vec3s point = screen_to_surf( view_direction, R, mouse, center );
-                            toggle( f, point );
-                        }
+                        set_cell( event->button.x, event->button.y, false );
                     }
                     button_right_set = true;
                     break;
@@ -214,7 +232,6 @@ void game_init( void ) {
     draw_init( render );
     font_load( render, &ft, "./data/font.cfg" );
     srand( time( nullptr ) );
-    random_fill();
 }
 
 int main( int argc, char * argv[] ) {
