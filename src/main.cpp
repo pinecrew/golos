@@ -5,6 +5,8 @@
 #include "font.hpp"
 #include "logics.hpp"
 
+#define sqr(i) (i) * (i)
+
 const int SDL_RENDER_DRIVER = 3; // use software renderer
 const char * game_name = "Game Of Life On Surface";
 const wchar_t tmp_str[] = L"(%s) FPS: %.2f; theta: %.2f; phi: %.2f; delay %d";
@@ -139,8 +141,11 @@ void game_event( SDL_Event * event ) {
                     if ( button_right_set == false ) {
                         SDL_Point center = { screen_width / 2, screen_height / 2 };
                         SDL_Point mouse = { event->button.x, event->button.y };
-                        vec3s point = screen_to_surf( view_direction, R, mouse, center );
-                        toggle( f, point );
+                        if ( sqr( mouse.x - center.x ) +
+                             sqr( mouse.y - center. y ) < sqr( R ) ) {
+                            vec3s point = screen_to_surf( view_direction, R, mouse, center );
+                            toggle( f, point );
+                        }
                     }
                     button_right_set = true;
                     break;
