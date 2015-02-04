@@ -191,8 +191,7 @@ void game_init( void ) {
     if ( window == NULL ) {
         game_send_error( EXIT_FAILURE );
     }
-    render = SDL_CreateRenderer( window, SDL_RENDER_DRIVER, SDL_RENDERER_ACCELERATED | 
-                                 SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE );
+    render = SDL_CreateRenderer( window, SDL_RENDER_DRIVER, SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE );
     if ( render == NULL ) {
         game_send_error( EXIT_FAILURE );
     }
