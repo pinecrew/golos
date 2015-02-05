@@ -139,15 +139,15 @@ void draw_sphere( vec3s n, vec3s light, SDL_Point center, float R, field & f ) {
 
     for ( std::size_t i = 0; i < f.height; ++i ) {
         for ( std::size_t j = 0; j < f.width; ++j ) {
-            cell contour = { f, (int)i, (int)j };
-            float indensity = (1.2 + contour.n * light) / 2.5;
+            cell curr = { f, (int)i, (int)j };
+            float indensity = (1.2 + curr.n * light) / 2.5;
             float inverse = ( 1.5f - indensity ) / 1.5f;
             if ( f[i][j] ) {
                 set_color3u( 255 * inverse, 0, 255 * inverse );
             } else {
                 set_color3u( 255 * indensity, 255 * indensity, 255 * indensity );
             }
-            auto cc = cell_contour( contour, f, 32 );
+            auto cc = cell_contour( curr, f, 32 );
             SDL_Point sc[cc.size()];
             int i = 0;
             for (auto v : cc)
@@ -162,12 +162,12 @@ void draw_sphere( vec3s n, vec3s light, SDL_Point center, float R, field & f ) {
 
     set_coloru( color );
 
-    // набор точек от 0 до 2pi
-    int size = 65;
+    // набор точек от 0 до pi
+    int size = 32;
     std::vector<vec3s> v(size);
     for (int i = 0; i < size; ++i) {
         v[i].r = R;
-        v[i].theta = 2 * M_PI * i / (size - 1);
+        v[i].theta = M_PI * i / (size - 1);
     }
     // меридианы
     for ( unsigned int i = 0; i < f.width; ++i ) {

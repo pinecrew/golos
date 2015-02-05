@@ -34,7 +34,7 @@ int px, py;
 vec3s delta = { 1, 0, 0 };
 vec3s view_direction = { 1, M_PI / 4, 0 };
 vec3s light_source = { 1, M_PI / 4, 0 };
-field f(16, 32);
+field f(10, 20);
 bool quit_flag = false;
 bool button_left_set = false;
 bool button_right_set = false;
