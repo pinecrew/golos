@@ -36,7 +36,8 @@ std::vector<vec3s> cell_contour( cell c, field f, std::size_t npoints ){
 }
 
 cell cell_from_point( field & f, vec3s & p ){
-    return { ( int )( p.theta / M_PI   * f.height ),
+    return { f,
+             ( int )( p.theta / M_PI   * f.height ),
              ( int )( p.phi / 2 / M_PI * f.width  )};
 }
 

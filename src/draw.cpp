@@ -142,7 +142,7 @@ void draw_sphere( vec3s n, SDL_Point center, float R, field & f ) {
     for ( std::size_t i = 0; i < f.height; ++i ) {
         for ( std::size_t j = 0; j < f.width; ++j ) {
             if ( f[i][j] ) {
-                auto cc = cell_contour( { (int)i, (int)j }, f, 32 );
+                auto cc = cell_contour( { f, (int)i, (int)j }, f, 32 );
                 SDL_Point sc[cc.size()];
                 int i = 0;
                 for (auto v : cc)

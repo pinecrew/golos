@@ -15,12 +15,6 @@ struct vec3d {
     float operator*( const vec3d & v );
 };
 
-
-struct cell {
-    int i, j;
-    cell( int _i, int _j ) : i( _i ), j( _j ) {};
-};
-
 class field {
     private:
         std::vector< std::vector< bool > > f;
@@ -28,6 +22,12 @@ class field {
         std::size_t width, height;
         std::vector< bool > & operator[](std::size_t i);
         field(std::size_t h, std::size_t w);
+};
+
+struct cell {
+    int i, j;
+    vec3s n;
+    cell( field & f, int _i, int _j );
 };
 
 SDL_Point surf_to_screen( vec3s n, vec3s sp, SDL_Point center );
