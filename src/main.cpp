@@ -31,8 +31,8 @@ const int help_box_width = 200;
 const int help_box_height = 90;
 float R = 200;
 int px, py;
-vec3s delta = { 0, 0,  };
-vec3s view_direction = {1, M_PI / 4, 0 };
+vec3s delta = { 1, 0, 0 };
+vec3s view_direction = { 1, M_PI / 4, 0 };
 vec3s light_source = { 1, M_PI / 4, 0 };
 field f(16, 32);
 bool quit_flag = false;
@@ -182,7 +182,7 @@ void game_event( SDL_Event * event ) {
 
 void game_loop( void ) {
     if ( game_step && game_counter >= MAX_COUNT ) {
-        nextStep( f );
+        f.nextGeneration();
         game_counter = 0;
     } else {
         game_counter++;

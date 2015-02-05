@@ -21,6 +21,7 @@ class field {
     public:
         std::size_t width, height;
         std::vector< bool > & operator[](std::size_t i);
+        void nextGeneration();
         field(std::size_t h, std::size_t w);
 };
 

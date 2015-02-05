@@ -13,5 +13,3 @@ cell cell_from_point( field & f, vec3s & p );
 void create( field & f, vec3s & p );
 void kill( field & f, vec3s & p );
 void toggle( field & f, vec3s & p );
-void nextStep(field & f);
-
