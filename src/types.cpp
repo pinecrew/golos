@@ -45,8 +45,8 @@ vec3s & operator -= ( vec3s & lhs, const vec3s & rhs ) {
 cell::cell( field & f, int _i, int _j ) : i(_i), j(_j) {
     int w = f.width, h = f.height;
     n = { 1,
-          ( float ) M_PI * ( j + 0.5f ) / h,
-          2.0f * ( float ) M_PI * ( i + 0.5f ) / w };
+          ( float ) M_PI * ( i + 0.5f ) / h,
+          2.0f * ( float ) M_PI * ( j + 0.5f ) / w };
 }
 
 
