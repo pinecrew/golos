@@ -134,25 +134,28 @@ void draw_path(vec3s n, SDL_Point center, std::vector<vec3s> vs) {
     }
 }
 
-void draw_sphere( vec3s n, SDL_Point center, float R, field & f ) {
+void draw_sphere( vec3s n, vec3s light, SDL_Point center, float R, field & f ) {
     Uint32 color = get_coloru();
 
-    // отрисуем все клетки для теста
-    set_color3u(255, 0, 255);
     for ( std::size_t i = 0; i < f.height; ++i ) {
         for ( std::size_t j = 0; j < f.width; ++j ) {
+            cell contour = { f, (int)i, (int)j };
+            float indensity = contour.n * light;
             if ( f[i][j] ) {
-                auto cc = cell_contour( { f, (int)i, (int)j }, f, 32 );
-                SDL_Point sc[cc.size()];
-                int i = 0;
-                for (auto v : cc)
-                {
-                    v.r = R;
-                    if ( visible( n, v ) )
-                        sc[i++] = surf_to_screen( n, v, center);
-                }
-                draw_filled_polygon( sc, i );
+                set_color3u( 255 * indensity, 0, 255 * indensity );
+            } else {
+                set_color3u( 255 * indensity, 255 * indensity, 255 * indensity );
             }
+            auto cc = cell_contour( contour, f, 32 );
+            SDL_Point sc[cc.size()];
+            int i = 0;
+            for (auto v : cc)
+            {
+                v.r = R;
+                if ( visible( n, v ) )
+                    sc[i++] = surf_to_screen( n, v, center );
+            }
+            draw_filled_polygon( sc, i );
         }
     }
 

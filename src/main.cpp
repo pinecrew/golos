@@ -31,8 +31,9 @@ const int help_box_width = 200;
 const int help_box_height = 90;
 float R = 200;
 int px, py;
-vec3s delta = { 0, 0, 0 };
+vec3s delta = { 0, 0,  };
 vec3s view_direction = {1, M_PI / 4, 0 };
+vec3s light_source = { 1, M_PI / 4, 0 };
 field f(16, 32);
 bool quit_flag = false;
 bool button_left_set = false;
@@ -64,7 +65,7 @@ float get_fps( void ) {
 }
 
 void random_fill( void ) {
-    for ( size_t i = 0; i < 128; i++ ) {
+    for ( std::size_t i = 0; i < 128; i++ ) {
         f[rand()%16][rand()%32] = true;
     }
 }
@@ -194,7 +195,7 @@ void game_render( void ) {
 
     SDL_RenderClear( render );
     set_coloru( COLOR_WHITE );
-    draw_sphere( view_direction, {screen_width / 2, screen_height / 2}, R, f );
+    draw_sphere( view_direction, light_source, {screen_width / 2, screen_height / 2}, R, f );
     swprintf( buffer, BUFFER_SIZE, tmp_str, game_status[int(game_step)], get_fps(),
               view_direction.theta, view_direction.phi, MAX_COUNT );
     font_draw( render, ft, buffer, 5, screen_height - 16 );
