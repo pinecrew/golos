@@ -140,7 +140,7 @@ void draw_sphere( vec3s n, vec3s light, SDL_Point center, float R, field & f ) {
     for ( std::size_t i = 0; i < f.height; ++i ) {
         for ( std::size_t j = 0; j < f.width; ++j ) {
             cell contour = { f, (int)i, (int)j };
-            float indensity = contour.n * light;
+            float indensity = (1.0 + contour.n * light) / 2;
             if ( f[i][j] ) {
                 set_color3u( 255 * indensity, 0, 255 * indensity );
             } else {
