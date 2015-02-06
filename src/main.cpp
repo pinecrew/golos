@@ -30,7 +30,6 @@ int screen_height = 640;
 const int help_box_width = 200;
 const int help_box_height = 90;
 int px, py;
-vec3s delta = { 1, 0, 0 };
 vec3s view_direction = { 1, M_PI / 4, 0 };
 vec3s light_source = { 1, M_PI / 4, 0 };
 field f(10, 20, 200);
@@ -107,16 +106,16 @@ void game_event( SDL_Event * event ) {
                     event->key.keysym.sym = 0;
                     break;
                 case SDLK_UP:
-                    view_direction.theta -= 0.01f;
+                    view_direction.rotate( -0.01f, 0.0f );
                     break;
                 case SDLK_DOWN:
-                    view_direction.theta += 0.01f;
+                    view_direction.rotate( 0.01f, 0.0f );
                     break;
                 case SDLK_LEFT:
-                    view_direction.phi -= 0.01f;
+                    view_direction.rotate( 0.0f, -0.01f );
                     break;
                 case SDLK_RIGHT:
-                    view_direction.phi += 0.01f;
+                    view_direction.rotate( 0.0f, 0.01f );
                     break;
                 case SDLK_PERIOD:
                     if ( MAX_COUNT > 0 ) {
@@ -142,11 +141,10 @@ void game_event( SDL_Event * event ) {
             break;
         case SDL_MOUSEMOTION:
             if ( button_left_set ) {
-                delta.phi = ( event->button.x - px ) / 100.0f;
-                delta.theta = ( event->button.y - py ) / 100.0f;
+                view_direction.rotate( -( event->button.y - py ) / 100.0f,
+                                       -( event->button.x - px ) / 100.0f);
                 px = event->button.x;
                 py = event->button.y;
-                view_direction += delta;
             }
             if ( button_right_set ) {
                 set_cell( event->button.x, event->button.y, true );
@@ -155,14 +153,14 @@ void game_event( SDL_Event * event ) {
         case SDL_MOUSEBUTTONDOWN:
             switch ( event->button.button ) {
                 case SDL_BUTTON_LEFT:
-                    if ( button_left_set == false ) {
+                    if ( !button_left_set ) {
                         px = event->button.x;
                         py = event->button.y;
                     }
                     button_left_set = true;
                     break;
                 case SDL_BUTTON_RIGHT:
-                    if ( button_right_set == false ) {
+                    if ( !button_right_set ) {
                         set_cell( event->button.x, event->button.y, false );
                     }
                     button_right_set = true;
@@ -239,7 +237,7 @@ int main( int argc, char * argv[] ) {
     float current = 0.0f, last = 0.0f;
 
     game_init();
-    while ( quit_flag == false ) {
+    while ( !quit_flag ) {
         current = (float) SDL_GetTicks();
         if ( current > last + 1000.0f / 60.0f ) {
             game_event( &event );

@@ -16,9 +16,6 @@ bool visible ( vec3s n, vec3s sp ) {
     return ( n * sp >= 0 ); // хак для увеличения области видимости
 }
 
-float _fmod( float x, float y ) {
-    return fmod( fmod( x, y ) + y, y );
-}
 
 vec3s screen_to_field(SDL_Point p, vec3s n, SDL_Point c, field & f ) {
    float b1 = ( p.x - c.x ) / f.r,
