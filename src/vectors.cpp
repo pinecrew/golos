@@ -5,13 +5,13 @@ vec3d::vec3d( const vec3s & v ) {
     float st, ct, sp, cp;
     sincosf(v.theta, &st, &ct);
     sincosf(v.phi, &sp, &cp);
-    this->x = v.r * st * cp;
-    this->y = v.r * st * sp;
-    this->z = v.r * ct;
+    x = v.r * st * cp;
+    y = v.r * st * sp;
+    z = v.r * ct;
 }
 
 float vec3d::operator*( const vec3d & rhs ) {
-    return this->x * rhs.x + this->y * rhs.y + this->z * rhs.z;
+    return x * rhs.x + y * rhs.y + z * rhs.z;
 }
 
 float vec3s::operator*( const vec3s & rhs ) {
@@ -30,4 +30,9 @@ vec3s & operator -= ( vec3s & lhs, const vec3s & rhs ) {
     lhs.theta -= rhs.theta;
     lhs.phi -= rhs.phi;
     return lhs;
+}
+
+void vec3s::rotate( float dtheta, float dphi ) {
+    theta = _fmod( theta + dtheta + M_PI, 2 * M_PI ) - M_PI;
+    phi = _fmod( phi + dphi, 2 * M_PI );
 }
