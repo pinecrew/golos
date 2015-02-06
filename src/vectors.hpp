@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+#include "types.hpp"
 
 struct vec3s {
     float r, theta, phi;
