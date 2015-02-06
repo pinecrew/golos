@@ -7,7 +7,6 @@ int font_load( SDL_Renderer * r, font_table_t ** t, const char * font ) {
     SDL_Texture *tex = nullptr;
     font_table_t *a = nullptr;
     wint_t current = 0;
-    char * text_name;
     size_t load = 1;
     int id = 0;
     FILE * f;
@@ -20,13 +19,12 @@ int font_load( SDL_Renderer * r, font_table_t ** t, const char * font ) {
     }
     fread( &( text_size ), sizeof(int), 1, f );
     fread( &( abc_size ), sizeof(int), 1, f );
-    text_name = new char [text_size];
+    a->tex_name = new char [text_size];
     a->table = new int [abc_size];
-    fread( text_name, text_size, 1, f );
+    fread( a->tex_name, text_size, 1, f );
     fread( &( a->t_width ), sizeof(int), 1, f );
     fread( &( a->t_height ), sizeof(int), 1, f );
-    tex = IMG_LoadTexture( r, text_name );
-    delete[] text_name;
+    tex = IMG_LoadTexture( r, a->tex_name );
     a->font = tex;
     if ( tex == nullptr ) {
         fclose( f );
@@ -81,8 +79,14 @@ void font_draw( SDL_Renderer * r, font_table_t * t, const wchar_t * text, int x,
     }
 }
 
+void font_reload( SDL_Renderer * r, font_table_t * t ) {
+    SDL_DestroyTexture( t->font );
+    t->font = IMG_LoadTexture( r, t->tex_name );
+}
+
 void font_destroy( font_table_t * t ) {
     SDL_DestroyTexture( t->font );
+    delete[] t->tex_name;
     delete[] t->table;
     delete t;
 }

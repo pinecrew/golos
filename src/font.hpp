@@ -18,12 +18,14 @@ struct font_table {
     int t_height;
     int t_width;
     int * table;
+    char * tex_name;
     SDL_Texture * font;
 };
 typedef struct font_table font_table_t;
 
 int font_load( SDL_Renderer * r, font_table_t ** t, const char * font );
 void font_draw( SDL_Renderer * r, font_table_t * t, const wchar_t * text, int x, int y );
+void font_reload( SDL_Renderer * r, font_table_t * t );
 void font_destroy( font_table_t * t );
 void font_coloru( font_table_t * t, Uint32 color );
 

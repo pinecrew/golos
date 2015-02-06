@@ -99,6 +99,7 @@ void game_event( void ) {
             if ( gw.event.window.event == SDL_WINDOWEVENT_RESIZED ) {
                 gw.width  = gw.event.window.data1;
                 gw.height = gw.event.window.data2;
+                font_reload( gw.render, gw.ft );
             }
             break;
         case SDL_KEYDOWN:
