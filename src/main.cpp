@@ -5,43 +5,51 @@
 #include "font.hpp"
 #include "field.hpp"
 
-#define sqr(i) (i) * (i)
-
-const int SDL_RENDER_DRIVER = 3; // use software renderer
-const char * game_name = "Game Of Life On fieldace";
 const wchar_t tmp_str[] = L"(%s) FPS: %.2f; theta: %.2f; phi: %.2f; delay %d";
 const wchar_t * game_status[] = {
     (const wchar_t *) "pause",
     (const wchar_t *) "play"
 };
 const wchar_t help_info[] =
-    L"help menu:\n\n"
+    L"\t\t   help menu\n"
+    L"-------------------------------\n"
     L"   F1 -- this menu\n"
     L"  ESC -- quit\n"
     L"SPACE -- play/pause\n"
+    L" RBLK -- set/clear\n"
+    L" LBLK -- rotation (mouse move)\n"
     L"    F -- random fill\n"
     L"    R -- clear field\n"
     L"    > -- speed up\n"
     L"    < -- speed down\n"
-    L" []{} -- rotate";
-int game_counter = 0, MAX_COUNT = 5;
-int screen_width = 640;
-int screen_height = 640;
-const int help_box_width = 200;
-const int help_box_height = 90;
-int px, py;
+    L" []{} -- rotate\n"
+    L"-------------------------------";
+const int help_box_width = 260;
+const int help_box_height = 110;
+int MAX_COUNT = 5;
 vec3s view_direction = { 1, M_PI / 4, 0 };
 vec3s light_source = { 1, M_PI / 4, 0 };
-field f(10, 20, 200);
-bool quit_flag = false;
-bool button_left_set = false;
-bool button_right_set = false;
-bool game_step = false;
-bool help_flag = false;
-SDL_Window * window = nullptr;
-SDL_Renderer * render = nullptr;
-SDL_Event event;
-font_table_t * ft = nullptr;
+field f( 10, 20, 200 );
+
+struct Window {
+    const char * name = (const char *) "Game Of Life On fieldace";
+    int SDL_RENDER_DRIVER = 3; // use software renderer
+    SDL_Window * window = nullptr;
+    SDL_Renderer * render = nullptr;
+    font_table_t * ft = nullptr;
+    SDL_Event event;
+    bool quit_flag = false;
+    bool button_left_set = false;
+    bool button_right_set = false;
+    bool game_step = false;
+    bool help_flag = false;
+    int width = 640;
+    int height = 640;
+    int counter = 0;
+    int mouse_x, mouse_y;
+} gw;
+
+template< typename T > inline T sqr( const T & i ) { return ( i ) * ( i ); } 
 
 void game_send_error( int code ) {
     SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", SDL_GetError(), nullptr );
@@ -63,13 +71,13 @@ float get_fps( void ) {
 }
 
 void random_fill( void ) {
-    for ( std::size_t i = 0; i < 128; i++ ) {
-        f[rand()%16][rand()%32] = true;
+    for ( std::size_t i = 0; i < ( f.width * f.height ) / 3; i++ ) {
+        f[rand()%f.height][rand()%f.width] = true;
     }
 }
 
 void set_cell( int x, int y, bool create_flag ) {
-    SDL_Point center = { screen_width / 2, screen_height / 2 };
+    SDL_Point center = { gw.width / 2, gw.height / 2 };
     SDL_Point mouse = { x, y };
     if ( sqr( x - center.x ) + sqr( y - center. y ) < sqr( f.r ) ) {
         vec3s point = screen_to_field( mouse, view_direction, center, f );
@@ -81,29 +89,29 @@ void set_cell( int x, int y, bool create_flag ) {
     }
 }
 
-void game_event( SDL_Event * event ) {
-    SDL_PollEvent( event );
-    switch ( event->type ) {
+void game_event( void ) {
+    SDL_PollEvent( &( gw.event ) );
+    switch ( gw.event.type ) {
         case SDL_QUIT:
-            quit_flag = true;
+            gw.quit_flag = true;
             break;
         case SDL_WINDOWEVENT:
-            if ( event->window.event == SDL_WINDOWEVENT_RESIZED ) {
-                screen_width  = event->window.data1;
-                screen_height = event->window.data2;
+            if ( gw.event.window.event == SDL_WINDOWEVENT_RESIZED ) {
+                gw.width  = gw.event.window.data1;
+                gw.height = gw.event.window.data2;
             }
             break;
         case SDL_KEYDOWN:
-            switch ( event->key.keysym.sym ) {
+            switch ( gw.event.key.keysym.sym ) {
                 case SDLK_ESCAPE:
-                    quit_flag = true;
+                    gw.quit_flag = true;
                     break;
                 case SDLK_SPACE:
-                    game_step = !game_step;
+                    gw.game_step = !gw.game_step;
                     break;
                 case SDLK_F1:
-                    help_flag = !help_flag;
-                    event->key.keysym.sym = 0;
+                    gw.help_flag = !gw.help_flag;
+                    gw.event.key.keysym.sym = 0;
                     break;
                 case SDLK_UP:
                     view_direction.rotate( -0.01f, 0.0f );
@@ -140,37 +148,37 @@ void game_event( SDL_Event * event ) {
             }
             break;
         case SDL_MOUSEMOTION:
-            if ( button_left_set ) {
-                view_direction.rotate( -( event->button.y - py ) / 100.0f,
-                                       -( event->button.x - px ) / 100.0f);
-                px = event->button.x;
-                py = event->button.y;
+            if ( gw.button_left_set ) {
+                view_direction.rotate( -( gw.event.button.y - gw.mouse_y ) / 100.0f,
+                                       -( gw.event.button.x - gw.mouse_x ) / 100.0f );
+                gw.mouse_x = gw.event.button.x;
+                gw.mouse_y = gw.event.button.y;
             }
-            if ( button_right_set ) {
-                set_cell( event->button.x, event->button.y, true );
+            if ( gw.button_right_set ) {
+                set_cell( gw.event.button.x, gw.event.button.y, true );
             }
             break;
         case SDL_MOUSEBUTTONDOWN:
-            switch ( event->button.button ) {
+            switch ( gw.event.button.button ) {
                 case SDL_BUTTON_LEFT:
-                    if ( !button_left_set ) {
-                        px = event->button.x;
-                        py = event->button.y;
+                    if ( !gw.button_left_set ) {
+                        gw.mouse_x = gw.event.button.x;
+                        gw.mouse_y = gw.event.button.y;
                     }
-                    button_left_set = true;
+                    gw.button_left_set = true;
                     break;
                 case SDL_BUTTON_RIGHT:
-                    if ( !button_right_set ) {
-                        set_cell( event->button.x, event->button.y, false );
+                    if ( !gw.button_right_set ) {
+                        set_cell( gw.event.button.x, gw.event.button.y, false );
                     }
-                    button_right_set = true;
+                    gw.button_right_set = true;
                     break;
                 default:
                     break;
             }
             break;
         case SDL_MOUSEBUTTONUP:
-            button_left_set = button_right_set = false;
+            gw.button_left_set = gw.button_right_set = false;
             break;
         default:
             break;
@@ -178,11 +186,11 @@ void game_event( SDL_Event * event ) {
 }
 
 void game_loop( void ) {
-    if ( game_step && game_counter >= MAX_COUNT ) {
+    if ( gw.game_step && gw.counter >= MAX_COUNT ) {
         f.nextGeneration();
-        game_counter = 0;
+        gw.counter = 0;
     } else {
-        game_counter++;
+        gw.counter++;
     }
 }
 
@@ -190,46 +198,50 @@ void game_render( void ) {
     const std::size_t BUFFER_SIZE = 128;
     wchar_t buffer[BUFFER_SIZE];
 
-    SDL_RenderClear( render );
+    SDL_RenderClear( gw.render );
     set_coloru( COLOR_WHITE );
-    draw_sphere( f, { screen_width / 2, screen_height / 2 },
+    draw_sphere( f, { gw.width / 2, gw.height / 2 },
                  view_direction, light_source );
-    swprintf( buffer, BUFFER_SIZE, tmp_str, game_status[int(game_step)], get_fps(),
+    swprintf( buffer, BUFFER_SIZE, tmp_str, game_status[int(gw.game_step)], get_fps(),
               view_direction.theta, view_direction.phi, MAX_COUNT );
-    font_draw( render, ft, buffer, 5, screen_height - 16 );
-    if ( help_flag ) {
+    font_draw( gw.render, gw.ft, buffer, 5, gw.height - 16 );
+    if ( gw.help_flag ) {
         set_color4u( 0x00, 0x00, 0xff, 0x96 );
-        draw_rectangle_param( ( screen_width - help_box_width ) / 2,
-                              ( screen_height - help_box_height ) / 2,
+        draw_rectangle_param( ( gw.width - help_box_width ) / 2,
+                              ( gw.height - help_box_height ) / 2,
                               help_box_width, help_box_height, true );
-        font_draw( render, ft, help_info, ( screen_width - help_box_width ) / 2,
-                   ( screen_height - help_box_height ) / 2 + 4 );
+        font_draw( gw.render, gw.ft, help_info, 
+                   ( gw.width - help_box_width ) / 2,
+                   ( gw.height - help_box_height ) / 2 + 4 );
     }
     set_coloru( COLOR_BLACK );
-    SDL_RenderPresent( render );
+    SDL_RenderPresent( gw.render );
 }
 
 void game_destroy( void ) {
-    font_destroy( ft );
-    SDL_DestroyRenderer( render );
-    SDL_DestroyWindow( window );
+    font_destroy( gw.ft );
+    SDL_DestroyRenderer( gw.render );
+    SDL_DestroyWindow( gw.window );
     SDL_Quit();
 }
 
 void game_init( void ) {
     SDL_Init( SDL_INIT_VIDEO | SDL_INIT_EVENTS );
-    window = SDL_CreateWindow( game_name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                               screen_width, screen_height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
-    if ( window == nullptr ) {
+    gw.window = SDL_CreateWindow( gw.name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                                           gw.width, gw.height, 
+                                            SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
+    if ( gw.window == nullptr ) {
         game_send_error( EXIT_FAILURE );
     }
-    render = SDL_CreateRenderer( window, SDL_RENDER_DRIVER, SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE );
-    if ( render == nullptr ) {
+    gw.render = SDL_CreateRenderer( gw.window, gw.SDL_RENDER_DRIVER, 
+                                             SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC | 
+                                             SDL_RENDERER_TARGETTEXTURE );
+    if ( gw.render == nullptr ) {
         game_send_error( EXIT_FAILURE );
     }
-    SDL_SetRenderDrawBlendMode( render, SDL_BLENDMODE_BLEND );
-    draw_init( render );
-    font_load( render, &ft, "./data/font.cfg" );
+    SDL_SetRenderDrawBlendMode( gw.render, SDL_BLENDMODE_BLEND );
+    draw_init( gw.render );
+    font_load( gw.render, &( gw.ft ), "./data/font.cfg" );
     srand( time( nullptr ) );
 }
 
@@ -237,10 +249,10 @@ int main( int argc, char * argv[] ) {
     float current = 0.0f, last = 0.0f;
 
     game_init();
-    while ( !quit_flag ) {
+    while ( !gw.quit_flag ) {
         current = (float) SDL_GetTicks();
         if ( current > last + 1000.0f / 60.0f ) {
-            game_event( &event );
+            game_event();
             game_loop();
             game_render();
             last = current;

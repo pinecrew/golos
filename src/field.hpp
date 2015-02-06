@@ -1,8 +1,8 @@
 #pragma once
 #include <cmath>
 #include <vector>
-#include "vectors.hpp"
 #include "types.hpp"
+#include "vectors.hpp"
 
 class field {
     private:

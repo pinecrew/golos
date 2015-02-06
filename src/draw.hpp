@@ -10,6 +10,7 @@ enum COLOR {
     COLOR_GREEN     = 0x00ff00,
     COLOR_BLUE      = 0x0000ff,
     COLOR_YELLOW    = 0xffff00,
+    COLOR_MAGENTA   = 0xff00ff,
 };
 
 void draw_init( SDL_Renderer * render );

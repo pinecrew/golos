@@ -57,8 +57,11 @@ void font_draw( SDL_Renderer * r, font_table_t * t, const wchar_t * text, int x,
                 pos.y += t->t_height;
                 pos.x = old_x;
                 continue;
+            case ' ':
+                pos.x += t->t_width;
+                continue;
             case '\t':
-                pos.x += 2 * t->t_width;
+                pos.x += 4 * t->t_width;
                 continue;
             // to upper
             case 'a'...'z':

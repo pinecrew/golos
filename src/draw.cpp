@@ -12,12 +12,11 @@ SDL_Point field_to_screen( vec3s sp, vec3s n, SDL_Point center ) {
              center.y - ( int ) ( sp * ey ) };
 }
 
-bool visible ( vec3s n, vec3s sp ) {
+bool visible( vec3s n, vec3s sp ) {
     return ( n * sp >= 0 ); // хак для увеличения области видимости
 }
 
-
-vec3s screen_to_field(SDL_Point p, vec3s n, SDL_Point c, field & f ) {
+vec3s screen_to_field( SDL_Point p, vec3s n, SDL_Point c, field & f ) {
    float b1 = ( p.x - c.x ) / f.r,
          b2 = ( c.y - p.y ) / f.r,
          a1 = cos( n.theta ),
@@ -40,6 +39,7 @@ vec3s screen_to_field(SDL_Point p, vec3s n, SDL_Point c, field & f ) {
        s = s2;
    return s;
 }
+
 SDL_Renderer * _render = nullptr;
 
 void draw_init( SDL_Renderer * render ) {
@@ -54,26 +54,19 @@ Uint32 get_coloru( void ) {
 }
 
 int set_coloru( Uint32 color ) {
-    Uint8 r, ro, g, go, b, bo, ao;
+    Uint8 r, g, b;
 
     r = ( color >> 16 );
     g = ( ( color >> 8 ) & 0xff );
     b = ( color & 0xff );
-    SDL_GetRenderDrawColor( _render, &ro, &go, &bo, &ao );
     return SDL_SetRenderDrawColor( _render, r, g, b, 0xff );
 }
 
 int set_color3u( Uint8 red, Uint8 green, Uint8 blue ) {
-    Uint8 ro, go, bo, ao;
-
-    SDL_GetRenderDrawColor( _render, &ro, &go, &bo, &ao );
     return SDL_SetRenderDrawColor( _render, red, green, blue, 0xff );
 }
 
 int set_color4u( Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha ) {
-    Uint8 ro, go, bo, ao;
-
-    SDL_GetRenderDrawColor( _render, &ro, &go, &bo, &ao );
     return SDL_SetRenderDrawColor( _render, red, green, blue, alpha );
 }
 
@@ -84,6 +77,7 @@ void draw_rectangle_param( int x, int y, int w, int h, bool fill ) {
         SDL_RenderFillRect( _render, &rect );
     } else {
         SDL_RenderDrawRect( _render, &rect );
+        // fix right-bottom pixel in rect
         SDL_RenderDrawPoint( _render, x + w - 1, y + h - 1 );
     }
 }
@@ -161,7 +155,7 @@ void draw_path( std::vector<vec3s> vs, vec3s n, SDL_Point center ) {
     for ( auto v: vs ) {
         if ( visible ( n, v ) )
         {
-            SDL_Point cur = field_to_screen( v, n, center);
+            SDL_Point cur = field_to_screen( v, n, center );
             if ( pe )
                 draw_aaline( prev.x, prev.y, cur.x, cur.y );
             prev = cur;
