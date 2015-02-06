@@ -146,7 +146,7 @@ void game_event( SDL_Event * event ) {
                 delta.theta = ( event->button.y - py ) / 100.0f;
                 px = event->button.x;
                 py = event->button.y;
-                view_direction -= delta;
+                view_direction += delta;
             }
             if ( button_right_set ) {
                 set_cell( event->button.x, event->button.y, true );
