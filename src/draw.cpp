@@ -1,7 +1,48 @@
 #include <algorithm>
 #include "draw.hpp"
-#include "logics.hpp"
+#include "field.hpp"
 
+SDL_Point field_to_screen( vec3s sp, vec3s n, SDL_Point center ) {
+    // координаты ортов в плоскости экрана в декартовых координатах
+    vec3s ex = { 1, ( float ) ( M_PI / 2 ), n.phi + ( float ) ( M_PI / 2 ) };
+    vec3s ey = { 1, n.theta - ( float ) ( M_PI / 2 ), n.phi };
+
+    // немного скалярных произведений
+    return { center.x + ( int ) ( sp * ex ),
+             center.y - ( int ) ( sp * ey ) };
+}
+
+bool visible ( vec3s n, vec3s sp ) {
+    return ( n * sp >= 0 ); // хак для увеличения области видимости
+}
+
+float _fmod( float x, float y ) {
+    return fmod( fmod( x, y ) + y, y );
+}
+
+vec3s screen_to_field(SDL_Point p, vec3s n, SDL_Point c, field & f ) {
+   float b1 = ( p.x - c.x ) / f.r,
+         b2 = ( c.y - p.y ) / f.r,
+         a1 = cos( n.theta ),
+         a2 = sin( n.theta );
+   float d = a1 * sqrt( 1 - b1 * b1 - b2 * b2 );
+   float ct1 = ( b2 * a2 + d ), ct2 = ( b2 * a2 - d );
+   float st1 = sqrt( 1 - ct1 * ct1 ), st2 = ( 1 - ct2 * ct2 );
+   float sdp1 = b1 / st1, sdp2 = b1 / st2;
+   float cdp1 = ( a2 * ct1 - b2 ) / a1 / st1, cdp2 = ( a2 * ct2 - b2 ) / a1 / st2;
+   float t1 = atan2f(st1, ct1),
+         t2 = atan2f(st1, ct1),
+         p1 = _fmod( n.phi + atan2f(sdp1, cdp1), 2 * M_PI)  ,
+         p2 = _fmod( n.phi + atan2f(sdp2, cdp2), 2 * M_PI );
+   vec3s s1 = { 1, t1, p1 };
+   vec3s s2 = { 1, t2, p2 };
+   vec3s s;
+   if ( visible(n, s1) )
+       s = s1;
+   else
+       s = s2;
+   return s;
+}
 SDL_Renderer * _render = nullptr;
 
 void draw_init( SDL_Renderer * render ) {
@@ -116,14 +157,14 @@ int draw_aaline( int x1, int y1, int x2, int y2 ) {
     return result;
 }
 
-void draw_path(vec3s n, SDL_Point center, std::vector<vec3s> vs) {
+void draw_path( std::vector<vec3s> vs, vec3s n, SDL_Point center ) {
     // отрисовываем путь
     SDL_Point prev;
     bool pe = false;
     for ( auto v: vs ) {
         if ( visible ( n, v ) )
         {
-            SDL_Point cur = surf_to_screen( n, v, center);
+            SDL_Point cur = field_to_screen( v, n, center);
             if ( pe )
                 draw_aaline( prev.x, prev.y, cur.x, cur.y );
             prev = cur;
@@ -134,27 +175,25 @@ void draw_path(vec3s n, SDL_Point center, std::vector<vec3s> vs) {
     }
 }
 
-void draw_sphere( vec3s n, vec3s light, SDL_Point center, float R, field & f ) {
+void draw_sphere( field & f, SDL_Point center, vec3s n, vec3s light ) {
     Uint32 color = get_coloru();
 
     for ( std::size_t i = 0; i < f.height; ++i ) {
         for ( std::size_t j = 0; j < f.width; ++j ) {
-            cell curr = { f, (int)i, (int)j };
-            float indensity = (1.2 + curr.n * light) / 2.5;
+            float indensity = (1.2 + f.norm( i, j ) * light) / 2.5;
             float inverse = ( 1.5f - indensity ) / 1.5f;
             if ( f[i][j] ) {
                 set_color3u( 255 * inverse, 0, 255 * inverse );
             } else {
                 set_color3u( 255 * indensity, 255 * indensity, 255 * indensity );
             }
-            auto cc = cell_contour( curr, f, 32 );
+            auto cc = f.cell_contour( i, j, 32 );
             SDL_Point sc[cc.size()];
             int i = 0;
             for (auto v : cc)
             {
-                v.r = R;
                 if ( visible( n, v ) )
-                    sc[i++] = surf_to_screen( n, v, center );
+                    sc[i++] = field_to_screen( v, n, center );
             }
             draw_filled_polygon( sc, i );
         }
@@ -166,14 +205,14 @@ void draw_sphere( vec3s n, vec3s light, SDL_Point center, float R, field & f ) {
     int size = 32;
     std::vector<vec3s> v(size);
     for (int i = 0; i < size; ++i) {
-        v[i].r = R;
+        v[i].r = f.r;
         v[i].theta = M_PI * i / (size - 1);
     }
     // меридианы
     for ( unsigned int i = 0; i < f.width; ++i ) {
         float p = i * 2 * M_PI / f.width;
         for (int i = 0; i < size; ++i) {v[i].phi = p;};
-        draw_path( n, center, v);
+        draw_path( v, n, center );
     }
 
     for (int i = 0; i < size; ++i) {v[i].phi = 2 * M_PI * i / (size - 1);}
@@ -181,24 +220,24 @@ void draw_sphere( vec3s n, vec3s light, SDL_Point center, float R, field & f ) {
     for ( unsigned int i = 1; i < f.height; ++i ) {
         float p = i * M_PI / f.height;
         for (int i = 0; i < size; ++i) {v[i].theta = p;};
-        draw_path( n, center, v);
+        draw_path( v, n, center );
     }
     // большая окружность для красоты
-    SDL_Point p1 = { center.x + ( int )R, center.y }, p2;
+    SDL_Point p1 = { center.x + ( int ) f.r, center.y }, p2;
     for (int i = 1; i < size; ++i) {
-        p2.x = center.x + R * cos( 2 * M_PI * i / ( size - 1 ) );
-        p2.y = center.y - R * sin( 2 * M_PI * i / ( size - 1 ) );
+        p2.x = center.x + f.r * cos( 2 * M_PI * i / ( size - 1 ) );
+        p2.y = center.y - f.r * sin( 2 * M_PI * i / ( size - 1 ) );
         draw_aaline( p1.x, p1.y, p2.x, p2.y );
         p1 = p2;
     }
 
     // оси координат (для проверки корректности отрисовки)
-    set_color3u(255, 0, 0);
-    draw_path( n, center, {{0,0,0}, {1.2f*R, M_PI/2, 0}});
-    set_color3u(0, 255, 0);
-    draw_path( n, center, {{0,0,0}, {1.2f*R, M_PI/2, M_PI / 2}});
-    set_color3u(0, 0, 255);
-    draw_path( n, center, {{0,0,0}, {1.2f*R, 0, 0}});
+    set_color3u( 255, 0, 0 );
+    draw_path( { { 0, 0, 0 }, { 1.2f * f.r, M_PI / 2, 0 } }, n, center );
+    set_color3u( 0, 255, 0 );
+    draw_path( { { 0, 0, 0 }, { 1.2f * f.r, M_PI / 2, M_PI / 2 } }, n, center );
+    set_color3u( 0, 0, 255 );
+    draw_path( { { 0, 0, 0 }, { 1.2f * f.r, 0, 0 } }, n, center );
 }
 
 int draw_filled_polygon( const SDL_Point* vs, const int n ) {

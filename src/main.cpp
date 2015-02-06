@@ -3,12 +3,12 @@
 #include <SDL2/SDL.h>
 #include "draw.hpp"
 #include "font.hpp"
-#include "logics.hpp"
+#include "field.hpp"
 
 #define sqr(i) (i) * (i)
 
 const int SDL_RENDER_DRIVER = 3; // use software renderer
-const char * game_name = "Game Of Life On Surface";
+const char * game_name = "Game Of Life On fieldace";
 const wchar_t tmp_str[] = L"(%s) FPS: %.2f; theta: %.2f; phi: %.2f; delay %d";
 const wchar_t * game_status[] = {
     (const wchar_t *) "pause",
@@ -29,12 +29,11 @@ int screen_width = 640;
 int screen_height = 640;
 const int help_box_width = 200;
 const int help_box_height = 90;
-float R = 200;
 int px, py;
 vec3s delta = { 1, 0, 0 };
 vec3s view_direction = { 1, M_PI / 4, 0 };
 vec3s light_source = { 1, M_PI / 4, 0 };
-field f(10, 20);
+field f(10, 20, 200);
 bool quit_flag = false;
 bool button_left_set = false;
 bool button_right_set = false;
@@ -73,12 +72,12 @@ void random_fill( void ) {
 void set_cell( int x, int y, bool create_flag ) {
     SDL_Point center = { screen_width / 2, screen_height / 2 };
     SDL_Point mouse = { x, y };
-    if ( sqr( x - center.x ) + sqr( y - center. y ) < sqr( R ) ) {
-        vec3s point = screen_to_surf( view_direction, R, mouse, center );
+    if ( sqr( x - center.x ) + sqr( y - center. y ) < sqr( f.r ) ) {
+        vec3s point = screen_to_field( mouse, view_direction, center, f );
         if ( create_flag ) {
-            create( f, point );
+            f.create( point );
         } else {
-            toggle( f, point );
+            f.toggle( point );
         }
     }
 }
@@ -131,9 +130,9 @@ void game_event( SDL_Event * event ) {
                     random_fill();
                     break;
                 case SDLK_r:
-                    for ( std::size_t i = 0; i < f.width; i++ ) {
-                        for ( std::size_t j = 0; j < f.height; j++ ) {
-                            f[j][i] = false;
+                    for ( std::size_t i = 0; i < f.height; i++ ) {
+                        for ( std::size_t j = 0; j < f.width; j++ ) {
+                            f[i][j] = false;
                         }
                     }
                     break;
@@ -195,7 +194,8 @@ void game_render( void ) {
 
     SDL_RenderClear( render );
     set_coloru( COLOR_WHITE );
-    draw_sphere( view_direction, light_source, {screen_width / 2, screen_height / 2}, R, f );
+    draw_sphere( f, { screen_width / 2, screen_height / 2 },
+                 view_direction, light_source );
     swprintf( buffer, BUFFER_SIZE, tmp_str, game_status[int(game_step)], get_fps(),
               view_direction.theta, view_direction.phi, MAX_COUNT );
     font_draw( render, ft, buffer, 5, screen_height - 16 );
