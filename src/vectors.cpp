@@ -1,4 +1,4 @@
-#include <cmath>
+#include "math.hpp"
 #include "vectors.hpp"
 
 vec3d::vec3d( const vec3s & v ) {

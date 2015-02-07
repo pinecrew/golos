@@ -1,6 +1,6 @@
 #pragma once
-#include <cmath>
-#include "types.hpp"
+
+#include "math.hpp"
 
 struct vec3s {
     float r, theta, phi;
@@ -16,4 +16,3 @@ struct vec3d {
     float operator*( const vec3d & v );
 };
 
-inline float _fmod( float x, float y ) { return fmod( fmod( x, y ) + y, y ); }

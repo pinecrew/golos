@@ -1,7 +1,8 @@
 #pragma once
-#include <cmath>
+
 #include <vector>
-#include "types.hpp"
+
+#include "math.hpp"
 #include "vectors.hpp"
 
 class field {

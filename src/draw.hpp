@@ -1,6 +1,7 @@
 #pragma once
-#include <cmath>
+
 #include <SDL2/SDL.h>
+
 #include "field.hpp"
 
 enum COLOR {
