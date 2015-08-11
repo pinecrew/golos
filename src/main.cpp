@@ -1,8 +1,9 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include "window.hpp"
+#include "vectors.hpp"
 
-float camera[] = {3,0,0}; // положение камеры в сферических координатах
+vec3s camera = {3,0,0}; // положение камеры в сферических координатах
 float dtheta = 0.012;
 float dphi = 0.01;
 GLUquadricObj * sphere;
@@ -44,17 +45,14 @@ void golos_event( SDL_Event * event ) {
 }
 
 void golos_render( void ) {
-    float rect_camera[3]; // положение камеры в прямоугольных координатах
-	rect_camera[0] = camera[0] * sin(camera[1]) * cos(camera[2]);
-	rect_camera[1] = camera[0] * sin(camera[1]) * sin(camera[2]);
-	rect_camera[2] = camera[0] * cos(camera[1]);
-	camera[1] += dtheta;
-	camera[2] += dphi;
+    vec3d rect_camera = vec3d(camera); // положение камеры в прямоугольных координатах
+	camera.theta += dtheta;
+	camera.phi += dphi;
 
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     glColor3f( 0.0f, 1.0f, 0.0f );
     glLoadIdentity();
-	gluLookAt(rect_camera[0], rect_camera[1], rect_camera[2], 0,  0, 0, 0, 1, 0);
+	gluLookAt(rect_camera.x, rect_camera.y, rect_camera.z, 0,  0, 0, 0, 1, 0);
     glTranslatef( 0.0f, 0.0f, 0.0f );
     glRotatef( -45.0f, 1.0f, 0.0f, 0.0f );
     glPolygonMode( GL_BACK, GL_POINT );

@@ -6,7 +6,7 @@
 class WindowManager {
 public:
     WindowManager( std::string title, int w_size = 640, int h_size = 640 ) :
-        width( w_size ), height( h_size ), windowname( title ) {}
+        windowname( title ), width( w_size ), height( h_size ) {};
     void MainLoop( void );
     void SetInitFunc( void ( *param )( void ) ) { init_callback = param; }
     void SetRenderFunc( void ( *param )( void ) ) { render_callback = param; }
