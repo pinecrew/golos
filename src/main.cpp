@@ -3,8 +3,12 @@
 #include <GL/glu.h>
 #include <cstdlib>
 
+float camera[] = {3,0,0}; // положение камеры в сферических координатах
+float dtheta = 0.012;
+float dphi = 0.01;
+
 struct Window {
-    const char * name = (const char *) "Game Of Life On fieldace";
+    const char * name = (const char *) "Game Of Life On sphere";
     SDL_Window * window = nullptr;
     SDL_Renderer * render = nullptr;
     SDL_GLContext context;
@@ -76,14 +80,24 @@ void golos_loop( void ) {
 }
 
 void golos_render( void ) {
+    float rect_camera[3]; // положение камеры в прямоугольных координатах
+	rect_camera[0] = camera[0] * sin(camera[1]) * cos(camera[2]);
+	rect_camera[1] = camera[0] * sin(camera[1]) * sin(camera[2]);
+	rect_camera[2] = camera[0] * cos(camera[1]);
+	camera[1] += dtheta;
+	camera[2] += dphi;
+
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     glColor3f( 0.0f, 1.0f, 0.0f );
     glLoadIdentity();
-    glTranslatef( 0.0f, 0.0f, -4.0f );
+	gluLookAt(rect_camera[0], rect_camera[1], rect_camera[2], 0,  0, 0, 0, 1, 0);
+    glTranslatef( 0.0f, 0.0f, 0.0f );
     glRotatef( -45.0f, 1.0f, 0.0f, 0.0f );
     glPolygonMode( GL_BACK, GL_POINT );
     glPolygonMode( GL_FRONT, GL_LINE );
     glColor3f( 0.0f, 1.0f, 0.0f );
+    gluQuadricTexture(sphere, true);
+    gluQuadricNormals(sphere, GLU_SMOOTH);
     gluSphere( sphere, 1.0f, 16, 16 );
     glFlush();
     SDL_GL_SwapWindow( gw.window );
