@@ -10,6 +10,12 @@ vec3d::vec3d( const vec3s & v ) {
     z = v.r * ct;
 }
 
+vec3d::vec3d( const float _x, const float _y, const float _z ) {
+    x = _x;
+    y = _y;
+    z = _z;
+}
+
 float vec3d::operator*( const vec3d & rhs ) {
     return x * rhs.x + y * rhs.y + z * rhs.z;
 }

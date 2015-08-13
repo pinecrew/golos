@@ -12,7 +12,8 @@ struct vec3s {
 
 struct vec3d {
     float x, y, z;
-    vec3d( const vec3s & v);
+    vec3d( const vec3s & v );
+    vec3d( const float _x, const float _y, const float _z );
     float operator*( const vec3d & v );
 };
 
