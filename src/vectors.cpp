@@ -10,10 +10,21 @@ vec3d::vec3d( const vec3s & v ) {
     z = v.r * ct;
 }
 
-vec3d::vec3d( const float _x, const float _y, const float _z ) {
-    x = _x;
-    y = _y;
-    z = _z;
+vec3d::vec3d( const float _x, const float _y, const float _z, bool polar ) {
+    if (polar) {
+        // _x -> r, _y -> theta, _z -> phi
+        float st, ct, sp, cp;
+        sincosf(_y, &st, &ct);
+        sincosf(_z, &sp, &cp);
+        x = _x * st * cp;
+        y = _x * st * sp;
+        z = _x * ct;
+    }
+    else {
+        x = _x;
+        y = _y;
+        z = _z;
+    }
 }
 
 float vec3d::operator*( const vec3d & rhs ) {
