@@ -28,8 +28,8 @@ vec3s screen_to_field( SDL_Point p, vec3s n, SDL_Point c, field & f ) {
    float cdp1 = ( a2 * ct1 - b2 ) / a1 / st1, cdp2 = ( a2 * ct2 - b2 ) / a1 / st2;
    float t1 = atan2f(st1, ct1),
          t2 = atan2f(st1, ct1),
-         p1 = _fmod( n.phi + atan2f(sdp1, cdp1), 2 * M_PI)  ,
-         p2 = _fmod( n.phi + atan2f(sdp2, cdp2), 2 * M_PI );
+         p1 = _fmod( n.phi + atan2f(sdp1, cdp1), M_2PI ),
+         p2 = _fmod( n.phi + atan2f(sdp2, cdp2), M_2PI );
    vec3s s1 = { 1, t1, p1 };
    vec3s s2 = { 1, t2, p2 };
    vec3s s;
@@ -40,254 +40,48 @@ vec3s screen_to_field( SDL_Point p, vec3s n, SDL_Point c, field & f ) {
    return s;
 }
 
-SDL_Renderer * _render = nullptr;
-
-void draw_init( SDL_Renderer * render ) {
-    _render = render;
-}
-
-Uint32 get_coloru( void ) {
-    Uint8 r, g, b;
-
-    SDL_GetRenderDrawColor( _render, &r, &g, &b, nullptr );
-    return ( r << 16 ) + ( g << 8 ) + b;
-}
-
-int set_coloru( Uint32 color ) {
-    Uint8 r, g, b;
-
-    r = ( color >> 16 );
-    g = ( ( color >> 8 ) & 0xff );
-    b = ( color & 0xff );
-    return SDL_SetRenderDrawColor( _render, r, g, b, 0xff );
-}
-
-int set_color3u( Uint8 red, Uint8 green, Uint8 blue ) {
-    return SDL_SetRenderDrawColor( _render, red, green, blue, 0xff );
-}
-
-int set_color4u( Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha ) {
-    return SDL_SetRenderDrawColor( _render, red, green, blue, alpha );
-}
-
-void draw_rectangle_param( int x, int y, int w, int h, bool fill ) {
-    SDL_Rect rect = { x, y, w, h };
-
-    if ( fill ) {
-        SDL_RenderFillRect( _render, &rect );
-    } else {
-        SDL_RenderDrawRect( _render, &rect );
-        // fix right-bottom pixel in rect
-        SDL_RenderDrawPoint( _render, x + w - 1, y + h - 1 );
-    }
-}
-
-int draw_aaline( int x1, int y1, int x2, int y2 ) {
-    Uint32 intshift, erracc, erradj, erracctmp, wgt;
-    int dx, dy, tmp, xdir, y0p1, x0pxdir, result;
-    Sint32 xx0, yy0, xx1, yy1;
-    Uint8 r, g, b, a;
-
-    result = SDL_GetRenderDrawColor( _render, &r, &g, &b, &a );
-    xx0 = x1; yy0 = y1;
-    xx1 = x2; yy1 = y2;
-    if ( yy0 > yy1 ) {
-        tmp = yy0; yy0 = yy1;
-        yy1 = tmp; tmp = xx0;
-        xx0 = xx1; xx1 = tmp;
-    }
-    dx = xx1 - xx0;
-    dy = yy1 - yy0;
-    if ( dx == 0 || dy == 0 ) {
-        return SDL_RenderDrawLine( _render, x1, y1, x2, y2 );
-    }
-    xdir = 1;
-    if ( dx < 0 ) {
-        xdir = -1;
-        dx = -dx;
-    }
-    erracc = 0;
-    intshift = 24;
-    result |= set_color3u( r, g, b );
-    result |= SDL_RenderDrawPoint( _render, x1, y1 );
-    if ( dy > dx ) {
-        erradj = ( ( dx << 16 ) / dy ) << 16;
-        x0pxdir = xx0 + xdir;
-        while ( --dy ) {
-            erracctmp = erracc;
-            erracc += erradj;
-            if ( erracc <= erracctmp ) {
-                xx0 = x0pxdir;
-                x0pxdir += xdir;
-            }
-            yy0++;
-            wgt = ( erracc >> intshift ) & 255;
-            result |= set_color4u( r, g, b, 255 - wgt );
-            result |= SDL_RenderDrawPoint( _render, xx0, yy0 );
-            result |= set_color4u( r, g, b, wgt );
-            result |= SDL_RenderDrawPoint( _render, x0pxdir, yy0 );
-        }
-    } else {
-        erradj = ( ( dy << 16 ) / dx ) << 16;
-        y0p1 = yy0 + 1;
-        while ( --dx ) {
-            erracctmp = erracc;
-            erracc += erradj;
-            if ( erracc <= erracctmp ) {
-                yy0 = y0p1;
-                y0p1++;
-            }
-            xx0 += xdir;
-            wgt = ( erracc >> intshift ) & 255;
-            result |= set_color4u( r, g, b, 255 - wgt );
-            result |= SDL_RenderDrawPoint( _render, xx0, yy0 );
-            result |= set_color4u( r, g, b, wgt );
-            result |= SDL_RenderDrawPoint( _render, xx0, y0p1 );
+gSphere::gSphere( float radius, size_t UResolution, size_t VResolution ) {
+    const float startU = 0.0f;
+    const float startV = 0.0f;
+    const float endU = M_PI;
+    const float endV = M_2PI;
+    const float stepU = ( endU - startU ) / (float) UResolution;
+    const float stepV = ( endV - startV ) / (float) VResolution;
+    max_count = UResolution * VResolution * 6;
+    vertex = new float [ max_count * 3 ];
+    size_t count = 0;
+    for ( size_t i = 0; i < UResolution; i++ ) {
+        for ( size_t j = 0; j < VResolution; j++ ) {
+            float u = (float) i * stepU + startU;
+            float v = (float) j * stepV + startV;
+            float un = (float) ( i + 1 ) * stepU + startU;
+            float vn = (float) ( j + 1 ) * stepV + startV;
+            vec3d p0 = vec3d( radius, u, v, true );
+            vec3d p1 = vec3d( radius, un, vn, true );
+            insert_vec3d( count +  0, p0 );
+            insert_vec3d( count +  3, vec3d( radius, un, v, true ) );
+            insert_vec3d( count +  6, p1 );
+            insert_vec3d( count +  9, p0 );
+            insert_vec3d( count + 12, p1 );
+            insert_vec3d( count + 15, vec3d( radius, u, vn, true ) );
+            count += 18;
         }
     }
-    return result;
 }
 
-void draw_path( std::vector<vec3s> vs, vec3s n, SDL_Point center ) {
-    // отрисовываем путь
-    SDL_Point prev;
-    bool pe = false;
-    for ( auto v: vs ) {
-        if ( visible ( n, v ) )
-        {
-            SDL_Point cur = field_to_screen( v, n, center );
-            if ( pe )
-                draw_aaline( prev.x, prev.y, cur.x, cur.y );
-            prev = cur;
-            pe = true;
-        }
-        else
-            pe = false;
-    }
+void gSphere::draw() {
+    glEnableClientState( GL_VERTEX_ARRAY );
+    glVertexPointer( 3, GL_FLOAT, 0, vertex );
+    glDrawArrays( GL_TRIANGLES, 0, max_count );
+    glDisableClientState( GL_VERTEX_ARRAY ); 
 }
 
-void draw_sphere( field & f, SDL_Point center, vec3s n, vec3s light ) {
-    Uint32 color = get_coloru();
-
-    for ( std::size_t i = 0; i < f.height; ++i ) {
-        for ( std::size_t j = 0; j < f.width; ++j ) {
-            float indensity = (1.2 + f.norm( i, j ) * light) / 2.5;
-            float inverse = ( 1.5f - indensity ) / 1.5f;
-            if ( f[i][j] ) {
-                set_color3u( 255 * inverse, 0, 255 * inverse );
-            } else {
-                set_color3u( 255 * indensity, 255 * indensity, 255 * indensity );
-            }
-            auto cc = f.cell_contour( i, j, 32 );
-            SDL_Point sc[cc.size()];
-            int i = 0;
-            for (auto v : cc)
-            {
-                if ( visible( n, v ) )
-                    sc[i++] = field_to_screen( v, n, center );
-            }
-            draw_filled_polygon( sc, i );
-        }
-    }
-
-    set_coloru( color );
-
-    // набор точек от 0 до pi
-    int size = 32;
-    std::vector<vec3s> v(size);
-    for (int i = 0; i < size; ++i) {
-        v[i].r = f.r;
-        v[i].theta = M_PI * i / (size - 1);
-    }
-    // меридианы
-    for ( unsigned int i = 0; i < f.width; ++i ) {
-        float p = i * 2 * M_PI / f.width;
-        for (int i = 0; i < size; ++i) {v[i].phi = p;};
-        draw_path( v, n, center );
-    }
-
-    for (int i = 0; i < size; ++i) {v[i].phi = 2 * M_PI * i / (size - 1);}
-    // широты
-    for ( unsigned int i = 1; i < f.height; ++i ) {
-        float p = i * M_PI / f.height;
-        for (int i = 0; i < size; ++i) {v[i].theta = p;};
-        draw_path( v, n, center );
-    }
-    // большая окружность для красоты
-    SDL_Point p1 = { center.x + ( int ) f.r, center.y }, p2;
-    for (int i = 1; i < size; ++i) {
-        p2.x = center.x + f.r * cos( 2 * M_PI * i / ( size - 1 ) );
-        p2.y = center.y - f.r * sin( 2 * M_PI * i / ( size - 1 ) );
-        draw_aaline( p1.x, p1.y, p2.x, p2.y );
-        p1 = p2;
-    }
-
-    // оси координат (для проверки корректности отрисовки)
-    set_color3u( 255, 0, 0 );
-    draw_path( { { 0, 0, 0 }, { 1.2f * f.r, M_PI / 2, 0 } }, n, center );
-    set_color3u( 0, 255, 0 );
-    draw_path( { { 0, 0, 0 }, { 1.2f * f.r, M_PI / 2, M_PI / 2 } }, n, center );
-    set_color3u( 0, 0, 255 );
-    draw_path( { { 0, 0, 0 }, { 1.2f * f.r, 0, 0 } }, n, center );
+gSphere::~gSphere() {
+    delete[] vertex;
 }
 
-int draw_filled_polygon( const SDL_Point* vs, const int n ) {
-    int min_y, max_y, result, counts;
-    int ind1, ind2, x1, x2, y1, y2;
-    int xa, xb;
-
-    if ( vs == nullptr || n < 3 ) {
-        return -1;
-    }
-    // нужно тестирование
-    min_y = std::min_element( vs, vs + n,
-            [](const SDL_Point & a, const SDL_Point & b)
-            { return a.y < b.y; } ) -> y;
-    max_y = std::max_element( vs, vs + n,
-            [](const SDL_Point & a, const SDL_Point & b)
-            { return a.y < b.y; } ) -> y;
-    result = 0;
-    int * polygons = new int [n];
-    for ( int y = min_y; y < max_y; y++ ) {
-        counts = 0;
-        for ( int i = 0; i < n; i++ ) {
-            if ( !i ) {
-                ind1 = n - 1;
-                ind2 = 0;
-            } else {
-                ind1 = i - 1;
-                ind2 = i;
-            }
-            y1 = vs[ind1].y;
-            y2 = vs[ind2].y;
-            if ( y1 < y2 ) {
-                x1 = vs[ind1].x;
-                x2 = vs[ind2].x;
-            } else if ( y1 > y2 ) {
-                y2 = vs[ind1].y;
-                y1 = vs[ind2].y;
-                x2 = vs[ind1].x;
-                x1 = vs[ind2].x;
-            } else {
-                continue;
-            }
-            if ( ( ( y >= y1 ) && ( y < y2 ) ) ||
-                 ( ( y == max_y ) && ( y > y1 ) && ( y <= y2 ) ) ) {
-                polygons[counts++] =
-                    ( ( 65536 * ( y - y1 ) ) / ( y2 - y1 ) ) * ( x2 - x1 ) +
-                    ( 65536 * x1 );
-            }
-        }
-        std::sort( polygons, polygons + counts );
-        result = 0;
-        for ( int i = 0; i < counts; i += 2 ) {
-            xa = polygons[i+0] + 1;
-            xb = polygons[i+1] - 1;
-            xa = ( xa >> 16 ) + ( ( xa & 32768 ) >> 15 );
-            xb = ( xb >> 16 ) + ( ( xb & 32768 ) >> 15 );
-            result |= SDL_RenderDrawLine( _render, xa, y, xb, y );
-        }
-    }
-    delete[] polygons;
-    return result;
+void gSphere::insert_vec3d( size_t index, vec3d v ) {
+    vertex[index+0] = v.x;
+    vertex[index+1] = v.y;
+    vertex[index+2] = v.z;
 }
