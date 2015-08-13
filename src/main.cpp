@@ -32,9 +32,9 @@ void draw_sphere( float radius, int UResolution, int VResolution ) {
             float un = (float) ( i + 1 ) * stepU + startU;
             float vn = (float) ( j + 1 ) * stepV + startV;
             vec3d p0 = vec3d( radius, u, v, true );
-            vec3d p1 = vec3d( radius, u, vn, true );
+            vec3d p1 = vec3d( radius, un, v, true );
             vec3d p2 = vec3d( radius, un, vn, true );
-            vec3d p3 = vec3d( radius, un, v, true );
+            vec3d p3 = vec3d( radius, u, vn, true );
             draw_quad( p0, p1, p2, p3 );
         }
     }
@@ -105,8 +105,8 @@ void golos_render( void ) {
     glColor3f( 0.0f, 1.0f, 0.0f );
     glLoadIdentity();
     gluLookAt( rect_camera.x, rect_camera.y, rect_camera.z, 0,  0, 0, 0, 0, 1 );
-    glPolygonMode( GL_BACK, GL_LINE );
-    glPolygonMode( GL_FRONT, GL_POINT );
+    glPolygonMode( GL_BACK, GL_POINT );
+    glPolygonMode( GL_FRONT, GL_LINE );
     glColor3f( 0.0f, 1.0f, 0.0f );
     draw_sphere( 1.0f, 16, 32 );
     glFlush();
