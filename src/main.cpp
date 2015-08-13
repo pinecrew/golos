@@ -1,45 +1,16 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <iostream>
+#include "draw.hpp"
 #include "math.hpp"
-#include "window.hpp"
 #include "vectors.hpp"
+#include "window.hpp"
 
 vec3s camera = {3,0,0}; // положение камеры в сферических координатах
 float dtheta = 0.01;
 float dphi = 0.01;
+gSphere sphere( 1.0f, 16, 32 );
 WindowManager window( "Game Of Life On fieldace" );
-
-void draw_quad( vec3d p0, vec3d p1, vec3d p2, vec3d p3 ) {
-    glVertex3f( p0.x, p0.y, p0.z );
-    glVertex3f( p1.x, p1.y, p1.z );
-    glVertex3f( p2.x, p2.y, p2.z );
-    glVertex3f( p3.x, p3.y, p3.z );
-}
-
-void draw_sphere( float radius, int UResolution, int VResolution ) {
-    const float startU = 0.0f;
-    const float startV = 0.0f;
-    const float endU = M_PI;
-    const float endV = M_2PI;
-    const float stepU = ( endU - startU ) / (float) UResolution;
-    const float stepV = ( endV - startV ) / (float) VResolution;
-    glBegin( GL_QUADS );
-    for ( int i = 0; i < UResolution; i++ ) {
-        for ( int j = 0; j < VResolution; j++ ) {
-            float u = (float) i * stepU + startU;
-            float v = (float) j * stepV + startV;
-            float un = (float) ( i + 1 ) * stepU + startU;
-            float vn = (float) ( j + 1 ) * stepV + startV;
-            vec3d p0 = vec3d( radius, u, v, true );
-            vec3d p1 = vec3d( radius, un, v, true );
-            vec3d p2 = vec3d( radius, un, vn, true );
-            vec3d p3 = vec3d( radius, u, vn, true );
-            draw_quad( p0, p1, p2, p3 );
-        }
-    }
-    glEnd();
-}
 
 void golos_init( void ) {
     // init OpenGL params
@@ -108,7 +79,7 @@ void golos_render( void ) {
     glPolygonMode( GL_BACK, GL_POINT );
     glPolygonMode( GL_FRONT, GL_LINE );
     glColor3f( 0.0f, 1.0f, 0.0f );
-    draw_sphere( 1.0f, 16, 32 );
+    sphere.draw();
     glFlush();
 }
 
