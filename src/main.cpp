@@ -12,7 +12,7 @@ vec3s camera = {3,M_PI/4,0}; // положение камеры в сферич�
 float dtheta = 0.01;
 float dphi = 0.01;
 GLuint program;
-gSphere sphere( 1.0f, 16, 32 );
+gSphere sphere( 1.0f, 30, 60 );
 
 int rows = 16;
 int cols = 32;

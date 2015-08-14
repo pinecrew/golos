@@ -7,8 +7,12 @@ void main(void) {
         // processing of the texture coordinates;
         // this is unnecessary if correct texture coordinates are specified by the application
 
-    gl_FragColor = texture2D(mytexture, longitudeLatitude);
+    vec4 color = texture2D(mytexture, longitudeLatitude);
         // look up the color of the texture image specified by the uniform "mytexture"
         // at the position specified by "longitudeLatitude.x" and
         // "longitudeLatitude.y" and return it in "gl_FragColor"
+
+    vec4 alive = vec4(0.4, 1.0, 0.4, 1.0);
+    vec4 dead = vec4(0.4, 0.4, 1.0, 1.0);
+    gl_FragColor = (color.x < 0.5) ? dead : alive;
 }
