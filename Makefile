@@ -1,6 +1,6 @@
 CXX = g++
 CFLAGS = -Wall -std=c++11 $(shell sdl2-config --cflags)
-LFLAGS = $(shell sdl2-config --libs) -lSDL2_image -lGLEW
+LFLAGS = $(shell sdl2-config --libs) -lSDL2_image
 PLATFORM = $(shell uname -s)
 
 ifeq ($(RELEASE), 1)
@@ -10,9 +10,9 @@ ifeq ($(DEBUG), 1)
 	LFLAGS += -ggdb -g3 -pg -O0
 endif
 ifeq ($(PLATFORM), Linux)
-	LFLAGS += -lGL -lGLU
+	LFLAGS += -lGL -lGLU -lGLEW
 else
-	LFLAGS += -lopengl32 -lglu32
+	LFLAGS += -lopengl32 -lglu32 -lglew32
 endif
 
 target_file  := main
