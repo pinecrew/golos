@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <iostream>
@@ -5,10 +6,12 @@
 #include "math.hpp"
 #include "vectors.hpp"
 #include "window.hpp"
+#include "shader.hpp"
 
-vec3s camera = {3,0,0}; // положение камеры в сферических координатах
+vec3s camera = {3,M_PI/4,0}; // положение камеры в сферических координатах
 float dtheta = 0.01;
 float dphi = 0.01;
+GLuint program;
 gSphere sphere( 1.0f, 16, 32 );
 WindowManager window( "Game Of Life On fieldace" );
 
@@ -23,6 +26,12 @@ void golos_init( void ) {
     glLoadIdentity();
     gluPerspective( 60.0f, (float) window.GetWidth() / (float) window.GetHeight(), 0.1f, 100.0f );
     glMatrixMode( GL_MODELVIEW );
+    glewInit();
+    program = glCreateProgram();
+    auto shader = compileShader("./shaders/fragment.glsl", GL_FRAGMENT_SHADER);
+    addShader(program, shader);
+    shader = compileShader("./shaders/vertex.glsl", GL_VERTEX_SHADER);
+    addShader(program, shader);
 }
 
 void golos_event( SDL_Event * event ) {
@@ -73,13 +82,37 @@ void golos_render( void ) {
     vec3d rect_camera = vec3d(camera); // положение камеры в прямоугольных координатах
 
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-    glColor3f( 0.0f, 1.0f, 0.0f );
     glLoadIdentity();
     gluLookAt( rect_camera.x, rect_camera.y, rect_camera.z, 0,  0, 0, 0, 0, 1 );
-    glPolygonMode( GL_BACK, GL_POINT );
-    glPolygonMode( GL_FRONT, GL_LINE );
-    glColor3f( 0.0f, 1.0f, 0.0f );
+
+    // врубаем шейдеры
+    glUseProgram(program);
+
+    // формируем текстуру
+    int rows = 16;
+    int cols = 32;
+
+    GLubyte* cells = new GLubyte[rows * cols];
+
+    for (int i = 0; i < rows * cols; ++i)
+        cells[i] = ((i + i / cols) % 2) ? 0xff : 0x00;
+
+    // отдаём текстуру
+    glBindTexture(GL_TEXTURE_2D, 1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RED , GL_UNSIGNED_BYTE, cells);
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+    // рисуем сферу
     sphere.draw();
+
+    // вырубаем шейдеры
+    glUseProgram(0);
+
+    delete[] cells;
     glFlush();
 }
 

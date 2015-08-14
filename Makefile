@@ -1,6 +1,6 @@
 CXX = g++
 CFLAGS = -Wall -std=c++11 $(shell sdl2-config --cflags)
-LFLAGS = $(shell sdl2-config --libs) -lSDL2_image
+LFLAGS = $(shell sdl2-config --libs) -lSDL2_image -lGLEW
 PLATFORM = $(shell uname -s)
 
 ifeq ($(RELEASE), 1)
