@@ -9,7 +9,25 @@ static inline int next_p2( int a ) {
     return rval;
 }
 
-void gFont::make_dlist( FT_Face face, int ch, GLuint list, GLuint * tex ) {
+inline void push_screen_coordinate_matrix() {
+    GLint viewport[4];
+    glPushAttrib( GL_TRANSFORM_BIT );
+    glGetIntegerv( GL_VIEWPORT, viewport );
+    glMatrixMode( GL_PROJECTION );
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D( viewport[0], viewport[2], viewport[1], viewport[3] );
+    glPopAttrib();
+}
+
+inline void pop_projection_matrix() {
+    glPushAttrib( GL_TRANSFORM_BIT );
+    glMatrixMode( GL_PROJECTION );
+    glPopMatrix();
+    glPopAttrib();
+}
+
+void gFont::make_dlist( FT_Face face, int ch ) {
     FT_BitmapGlyph bitmap_glyph;
     int width, height, i, j;
     FT_Bitmap bitmap;
@@ -57,14 +75,13 @@ void gFont::make_dlist( FT_Face face, int ch, GLuint list, GLuint * tex ) {
     glPopMatrix();
     glTranslatef( face->glyph->advance.x >> 6, 0, 0 );
     glEndList();
-    FT_Done_Glyph( glyph );
 }
 
-gFont::gFont( std::string fontname, uint16_t height ) {
+void gFont::load( std::string fontname, uint16_t height ) {
     FT_Library lib;
     FT_Face face;
 
-    tex = new GLuint[ UI_FONT_LIST ];
+    tex = new GLuint[ FONT_LIST_SIZE ];
     if ( FT_Init_FreeType( &lib ) ) {
         Panic( "FT_Init_FreeType" );
     }
@@ -72,12 +89,10 @@ gFont::gFont( std::string fontname, uint16_t height ) {
         Panic( "FT_New_Face exits" );
     }
     FT_Set_Char_Size( face, height << 6, height << 6, 96, 96 );
-    FT_Select_Charmap( face, FT_ENCODING_UNICODE );
-    list = glGenLists( UI_FONT_LIST );
-    size_t char_table_size = strlen( char_table );
-    glGenTextures( char_table_size, tex );
-    for ( size_t i = 0; i < char_table_size; i++ ) {
-        make_dlist( face, char_table[i], list, tex );
+    list = glGenLists( FONT_LIST_SIZE );
+    glGenTextures( FONT_LIST_SIZE, tex );
+    for ( size_t i = 0; i < FONT_LIST_SIZE; i++ ) {
+        make_dlist( face, i );
     }
     FT_Done_Face( face );
     FT_Done_FreeType( lib );
@@ -106,6 +121,7 @@ void gFont::draw( float x, float y, const char * fmt, ... ) {
             }
         }
     }
+    push_screen_coordinate_matrix();
     glPushAttrib( GL_LIST_BIT | GL_CURRENT_BIT | GL_ENABLE_BIT | GL_TRANSFORM_BIT );
     glMatrixMode( GL_MODELVIEW );
     glDisable( GL_LIGHTING ); 
@@ -115,19 +131,17 @@ void gFont::draw( float x, float y, const char * fmt, ... ) {
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
     glListBase( list );
     glGetFloatv( GL_MODELVIEW_MATRIX, modelview_matrix );
-    // для вывода нескольких строк
     glPushMatrix();
     glLoadIdentity();
     glMultMatrixf( modelview_matrix );
     glTranslatef( x, y, 0 );
-    glRotatef( 180, 1.0f, 0.0f, 0.0f );
-    glCallLists( size, GL_UNSIGNED_SHORT, text.c_str() );
+    glCallLists( text.length(), GL_UNSIGNED_BYTE, text.c_str() );
     glPopMatrix();
-    /* для вывода нескольких строк */
     glPopAttrib();
+    pop_projection_matrix();
 }
 
 gFont::~gFont() {
-    glDeleteTextures( UI_FONT_LIST, tex );
+    glDeleteTextures( FONT_LIST_SIZE, tex );
     delete[] tex;
 }

@@ -14,7 +14,7 @@ float dtheta = 0.01;
 float dphi = 0.01;
 GLuint program;
 gSphere sphere( 1.0f, 30, 60 );
-gFont font( "./data/OpenSansLight.ttf", 24 );
+gFont font;
 
 int rows = 30;
 int cols = 60;
@@ -47,6 +47,8 @@ void golos_init( void ) {
         for ( int j = 0; j < cols; ++j )
             (*f)[i][j] = rand() % 2;
     cells = new GLubyte[rows * cols];
+
+    font.load( "./data/OpenSansLight.ttf", 16 );
 }
 
 void golos_event( SDL_Event * event ) {
@@ -117,6 +119,14 @@ void golos_render( void ) {
 
     // вырубаем шейдеры
     glUseProgram(0);
+
+    // для нормального отображения текста
+    glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
+    glPushMatrix();
+    glLoadIdentity();
+    glColor3f( 1.0f, 1.0f, 1.0f );
+    font.draw( 10, 10, "FPS: %.2f", window.GetFPS() );
+    glPopMatrix();
 
     glFlush();
 }
