@@ -3,6 +3,8 @@
 #include <string>
 #include <cstdlib>
 
+void Panic( const char * error );
+
 class WindowManager {
 public:
     WindowManager( std::string title, int w_size = 640, int h_size = 640 ) :

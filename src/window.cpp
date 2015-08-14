@@ -1,5 +1,13 @@
 #include "window.hpp"
 
+void Panic( const char * error ) {
+    std::string error_data = "[error] ";
+    error_data += error;
+    error_data += " exits failure!";
+    SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", error_data.c_str(), nullptr );
+    exit( EXIT_FAILURE );
+}
+
 void WindowManager::MainLoop( void ) {
     float current = 0.0f, last = 0.0f;
     // init SDL subsystems
