@@ -1,46 +1,11 @@
 #include <algorithm>
 #include "draw.hpp"
-#include "field.hpp"
 
-SDL_Point field_to_screen( vec3s sp, vec3s n, SDL_Point center ) {
-    // координаты ортов в плоскости экрана в декартовых координатах
-    vec3s ex = { 1, ( float ) ( M_PI / 2 ), n.phi + ( float ) ( M_PI / 2 ) };
-    vec3s ey = { 1, n.theta - ( float ) ( M_PI / 2 ), n.phi };
+// vec3s screen_to_field( ) {
+    // TODO
+// }
 
-    // немного скалярных произведений
-    return { center.x + ( int ) ( sp * ex ),
-             center.y - ( int ) ( sp * ey ) };
-}
-
-bool visible( vec3s n, vec3s sp ) {
-    return ( n * sp >= 0 ); // хак для увеличения области видимости
-}
-
-vec3s screen_to_field( SDL_Point p, vec3s n, SDL_Point c, field & f ) {
-   float b1 = ( p.x - c.x ) / f.r,
-         b2 = ( c.y - p.y ) / f.r,
-         a1 = cos( n.theta ),
-         a2 = sin( n.theta );
-   float d = a1 * sqrt( 1 - b1 * b1 - b2 * b2 );
-   float ct1 = ( b2 * a2 + d ), ct2 = ( b2 * a2 - d );
-   float st1 = sqrt( 1 - ct1 * ct1 ), st2 = ( 1 - ct2 * ct2 );
-   float sdp1 = b1 / st1, sdp2 = b1 / st2;
-   float cdp1 = ( a2 * ct1 - b2 ) / a1 / st1, cdp2 = ( a2 * ct2 - b2 ) / a1 / st2;
-   float t1 = atan2f(st1, ct1),
-         t2 = atan2f(st1, ct1),
-         p1 = _fmod( n.phi + atan2f(sdp1, cdp1), M_2PI ),
-         p2 = _fmod( n.phi + atan2f(sdp2, cdp2), M_2PI );
-   vec3s s1 = { 1, t1, p1 };
-   vec3s s2 = { 1, t2, p2 };
-   vec3s s;
-   if ( visible(n, s1) )
-       s = s1;
-   else
-       s = s2;
-   return s;
-}
-
-gSphere::gSphere( float radius, size_t UResolution, size_t VResolution ) {
+gSphere::gSphere( float radius, std::size_t UResolution, std::size_t VResolution ) {
     const float startU = 0.0f;
     const float startV = 0.0f;
     const float endU = M_PI;
@@ -49,9 +14,9 @@ gSphere::gSphere( float radius, size_t UResolution, size_t VResolution ) {
     const float stepV = ( endV - startV ) / (float) VResolution;
     max_count = UResolution * VResolution * 6;
     vertex = new float [ max_count * 3 ];
-    size_t count = 0;
-    for ( size_t i = 0; i < UResolution; i++ ) {
-        for ( size_t j = 0; j < VResolution; j++ ) {
+    std::size_t count = 0;
+    for ( std::size_t i = 0; i < UResolution; i++ ) {
+        for ( std::size_t j = 0; j < VResolution; j++ ) {
             float u = (float) i * stepU + startU;
             float v = (float) j * stepV + startV;
             float un = (float) ( i + 1 ) * stepU + startU;
@@ -80,7 +45,7 @@ gSphere::~gSphere() {
     delete[] vertex;
 }
 
-void gSphere::insert_vec3d( size_t index, vec3d v ) {
+void gSphere::insert_vec3d( std::size_t index, vec3d v ) {
     vertex[index+0] = v.x;
     vertex[index+1] = v.y;
     vertex[index+2] = v.z;

@@ -34,12 +34,12 @@ void golos_init( void ) {
     glMatrixMode( GL_MODELVIEW );
     glewInit();
     program = glCreateProgram();
-    auto shader = compileShader("./shaders/fragment.glsl", GL_FRAGMENT_SHADER);
-    addShader(program, shader);
-    shader = compileShader("./shaders/vertex.glsl", GL_VERTEX_SHADER);
-    addShader(program, shader);
+    auto shader = compileShader( "./shaders/fragment.glsl", GL_FRAGMENT_SHADER );
+    addShader( program, shader );
+    shader = compileShader("./shaders/vertex.glsl", GL_VERTEX_SHADER );
+    addShader( program, shader );
 
-    f = new field(rows, cols, 1.0);
+    f = new field( rows, cols );
     // рандомная инициализация
     for ( int i = 0; i < rows; ++i )
         for ( int j = 0; j < cols; ++j )
