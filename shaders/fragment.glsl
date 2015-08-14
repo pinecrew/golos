@@ -14,5 +14,5 @@ void main(void) {
 
     vec4 alive = vec4(0.4, 1.0, 0.4, 1.0);
     vec4 dead = vec4(0.4, 0.4, 1.0, 1.0);
-    gl_FragColor = (color.x < 0.5) ? dead : alive;
+    gl_FragColor = (color.r < 0.5) ? dead : alive;
 }

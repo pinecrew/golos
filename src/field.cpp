@@ -1,7 +1,7 @@
 #include "field.hpp"
 
-field::field(std::size_t h, std::size_t w, float r) :
-    f(h), width(w), height(h), r(r) {
+field::field(std::size_t h, std::size_t w) :
+    f(h), width(w), height(h) {
     for (std::size_t i = 0; i < h; ++i)
         this->f[i].assign(w, false);
 }
@@ -74,64 +74,22 @@ void field::nextGeneration() {
     delete[] tmp;
 }
 
-vec3s field::norm( std::size_t i, std::size_t j ) {
-    return { 1,
-             ( float ) M_PI * ( i + 0.5f ) / height,
-             2.0f * ( float ) M_PI * ( j + 0.5f ) / width };
-}
-
-// получаем контур на поверхности сферы
-std::vector<vec3s> field::cell_contour( std::size_t i, std::size_t j,
-                                        std::size_t npoints ) {
-    // пока не обрабатываем ячейки у полюсов, хотя там одна из сторон просто
-    // вырождается в точку и все точки на этой стороне совпадают
-    std::vector<vec3s> contour( npoints, { r, 0, 0 } );
-    std::size_t pos = npoints / 4; // points on side
-    std::size_t c = 0;
-    // обход из правого нижнего угла против часовой стрелки
-    // по меридиану
-    for ( ; c < pos; ++c ){
-        contour[c].theta = ( i + 1 - ( float ) c / pos ) * M_PI / height;
-        contour[c].phi = ( j + 1 ) * 2 * M_PI / width;
-    }
-    // по широте
-    for ( ; c < 2 * pos; ++c ){
-        contour[c].theta = i * M_PI / height;
-        contour[c].phi = ( j + 1 - ( float ) ( c - pos ) / pos )
-                         * 2 * M_PI / width;
-    }
-    // снова по меридиану
-    for ( ; c < 3 * pos; ++c ){
-        contour[c].theta = ( i + ( float ) ( c - 2 * pos ) / pos )
-                           * M_PI / height;
-        contour[c].phi = j * 2 * M_PI / width;
-    }
-    // и ещё раз по широте
-    for ( ; c < npoints; ++c) {
-        auto last = npoints - 3 * pos;
-        contour[c].theta = ( i + 1 ) * M_PI / height;
-        contour[c].phi = ( j + ( float ) ( c - 3 * pos ) / last )
-                         * 2 * M_PI / width;
-    }
-    return contour;
-}
-
-std::pair<std::size_t, std::size_t> field::cell_from_point( vec3s & p ) {
+std::pair<std::size_t, std::size_t> field::cell_from_point( const vec3s & p ) {
     return { p.theta / M_PI   * height,
              p.phi / 2 / M_PI * width };
 }
 
-void field::create( vec3s & p ) {
+void field::create( const vec3s & p ) {
     auto c = cell_from_point( p );
     f[c.first][c.second] = true;
 }
 
-void field::kill( vec3s & p ) {
+void field::kill( const vec3s & p ) {
     auto c = cell_from_point( p );
     f[c.first][c.second] = false;
 }
 
-void field::toggle( vec3s & p ) {
+void field::toggle( const vec3s & p ) {
     auto c = cell_from_point( p );
     f[c.first][c.second] = !f[c.first][c.second];
 }
