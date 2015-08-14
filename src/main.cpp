@@ -13,6 +13,12 @@ float dtheta = 0.01;
 float dphi = 0.01;
 GLuint program;
 gSphere sphere( 1.0f, 16, 32 );
+
+int rows = 16;
+int cols = 32;
+GLubyte* cells;
+field* f;
+
 WindowManager window( "Game Of Life On fieldace" );
 
 void golos_init( void ) {
@@ -32,6 +38,13 @@ void golos_init( void ) {
     addShader(program, shader);
     shader = compileShader("./shaders/vertex.glsl", GL_VERTEX_SHADER);
     addShader(program, shader);
+
+    f = new field(rows, cols, 1.0);
+    // рандомная инициализация
+    for ( int i = 0; i < rows; ++i )
+        for ( int j = 0; j < cols; ++j )
+            (*f)[i][j] = rand() % 2;
+    cells = new GLubyte[rows * cols];
 }
 
 void golos_event( SDL_Event * event ) {
@@ -42,6 +55,9 @@ void golos_event( SDL_Event * event ) {
             break;
         case SDL_KEYDOWN:
             switch ( event->key.keysym.sym ) {
+                case SDLK_SPACE:
+                    f->nextGeneration();
+                    break;
                 case SDLK_ESCAPE:
                 case SDLK_q:
                     window.KillWindow();
@@ -77,25 +93,22 @@ void golos_render( void ) {
     gluLookAt( rect_camera.x, rect_camera.y, rect_camera.z, 0, 0, 0, 0, 0, up );
 
     // врубаем шейдеры
-    glUseProgram(program);
+    glUseProgram( program );
 
     // формируем текстуру
-    int rows = 16;
-    int cols = 32;
 
-    GLubyte* cells = new GLubyte[rows * cols];
-
-    for (int i = 0; i < rows * cols; ++i)
-        cells[i] = (float(i) / rows / cols) * (((i + i / cols) % 2) ? 0xff : 0x00);
+    for ( int i = 0; i < rows; ++i )
+        for ( int j = 0; j < cols; ++j )
+            cells[i * cols + j] = ( (*f)[i][j] ) ? 0xff : 0x00;
 
     // отдаём текстуру
-    glBindTexture(GL_TEXTURE_2D, 1);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RED , GL_UNSIGNED_BYTE, cells);
-    glEnable(GL_TEXTURE_2D);
-    glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glBindTexture( GL_TEXTURE_2D, 1 );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RED , GL_UNSIGNED_BYTE, cells );
+    glEnable( GL_TEXTURE_2D );
+    glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
 
     // рисуем сферу
     sphere.draw();
@@ -103,12 +116,11 @@ void golos_render( void ) {
     // вырубаем шейдеры
     glUseProgram(0);
 
-    delete[] cells;
     glFlush();
 }
 
 void golos_destroy( void ) {
-    // insert code here
+    delete[] cells;
 }
 
 int main( int argc, char ** argv ) {
