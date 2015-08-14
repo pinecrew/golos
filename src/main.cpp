@@ -7,12 +7,14 @@
 #include "vectors.hpp"
 #include "window.hpp"
 #include "shader.hpp"
+#include "font.hpp"
 
 vec3s camera = {3,M_PI/4,0}; // положение камеры в сферических координатах
 float dtheta = 0.01;
 float dphi = 0.01;
 GLuint program;
 gSphere sphere( 1.0f, 30, 60 );
+gFont font( "./data/OpenSansLight.ttf", 24 );
 
 int rows = 16;
 int cols = 32;
