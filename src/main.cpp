@@ -14,8 +14,8 @@ float dphi = 0.01;
 GLuint program;
 gSphere sphere( 1.0f, 30, 60 );
 
-int rows = 16;
-int cols = 32;
+int rows = 30;
+int cols = 60;
 GLubyte* cells;
 field* f;
 
