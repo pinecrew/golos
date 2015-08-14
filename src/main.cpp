@@ -47,24 +47,16 @@ void golos_event( SDL_Event * event ) {
                     window.KillWindow();
                     break;
                 case SDLK_DOWN:
-                    camera.theta += dtheta;
-                    if (camera.theta > M_PI) {
-                        camera.phi += M_PI;
-                        camera.theta -= M_PI;
-                    }
+                    camera.rotate(dtheta, 0);
                     break;
                 case SDLK_UP:
-                    camera.theta -= dtheta;
-                    if (camera.theta < 0) {
-                        camera.phi -= M_PI;
-                        camera.theta += M_PI;
-                    }
+                    camera.rotate(-dtheta, 0);
                     break;
                 case SDLK_RIGHT:
-                    camera.phi += dphi;
+                    camera.rotate(0, dphi);
                     break;
                 case SDLK_LEFT:
-                    camera.phi -= dphi;
+                    camera.rotate(0, -dphi);
                     break;
                 default:
                     break;
@@ -73,9 +65,6 @@ void golos_event( SDL_Event * event ) {
         default:
             break;
     }
-    //auto rc = vec3d(camera);
-    //std::cout << "( " << camera.theta << ", " << camera.phi << " ) -> (" <<
-    //"( " << rc.x << ", " << rc.y << ", " << rc.z << " )" << std::endl;
 }
 
 void golos_render( void ) {
@@ -83,7 +72,9 @@ void golos_render( void ) {
 
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     glLoadIdentity();
-    gluLookAt( rect_camera.x, rect_camera.y, rect_camera.z, 0,  0, 0, 0, 0, 1 );
+
+    float up = (camera.theta < 0) ? -1.0 : 1.0; // фикс для gluLookAt
+    gluLookAt( rect_camera.x, rect_camera.y, rect_camera.z, 0, 0, 0, 0, 0, up );
 
     // врубаем шейдеры
     glUseProgram(program);
@@ -95,7 +86,7 @@ void golos_render( void ) {
     GLubyte* cells = new GLubyte[rows * cols];
 
     for (int i = 0; i < rows * cols; ++i)
-        cells[i] = ((i + i / cols) % 2) ? 0xff : 0x00;
+        cells[i] = (float(i) / rows / cols) * (((i + i / cols) % 2) ? 0xff : 0x00);
 
     // отдаём текстуру
     glBindTexture(GL_TEXTURE_2D, 1);
