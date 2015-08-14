@@ -3,7 +3,7 @@
 void Panic( const char * error ) {
     std::string error_data = "[error] ";
     error_data += error;
-    error_data += " exits failure!";
+    error_data += " failure!";
     SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", error_data.c_str(), nullptr );
     exit( EXIT_FAILURE );
 }
@@ -38,6 +38,20 @@ void WindowManager::MainLoop( void ) {
             last = current;
         }
     }
+}
+
+float WindowManager::GetFPS( void ) {
+    static float NewCount = 0.0f, LastCount = 0.0f, FpsRate = 0.0f;
+    static int FrameCount = 0;
+
+    NewCount = (float) SDL_GetTicks();
+    if ( ( NewCount - LastCount ) > 1000.0f ) {
+        FpsRate = ( FrameCount * 1000.0f ) / ( NewCount - LastCount );
+        LastCount = NewCount;
+        FrameCount = 0;
+    }
+    FrameCount++;
+    return FpsRate;
 }
 
 void WindowManager::KillWindow( void ) {

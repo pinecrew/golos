@@ -13,6 +13,7 @@ public:
     void SetInitFunc( void ( *param )( void ) ) { init_callback = param; }
     void SetRenderFunc( void ( *param )( void ) ) { render_callback = param; }
     void SetEventFunc( void ( *param )( SDL_Event * event ) ) { event_callback = param; }
+    float GetFPS( void );
     void KillWindow( void );
     void Panic( void );
     int GetWidth( void ) { return width; }
