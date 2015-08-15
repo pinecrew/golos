@@ -1,15 +1,13 @@
 #include "window.hpp"
 
 void Panic( const char * error ) {
-    std::string error_data = "[error] ";
-    error_data += error;
+    std::string error_data = error;
     error_data += " failure!";
     SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", error_data.c_str(), nullptr );
     exit( EXIT_FAILURE );
 }
 
 void WindowManager::MainLoop( void ) {
-    float current = 0.0f, last = 0.0f;
     // init SDL subsystems
     if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_EVENTS ) ) {
         Panic();
@@ -28,12 +26,19 @@ void WindowManager::MainLoop( void ) {
     }
     // init OpenGL context
     context = SDL_GL_CreateContext( window );
-    init_callback();
+    if ( init_callback ) {
+        init_callback();
+    }
+    float last = 0.0f;
     while ( !quit_flag ) {
-        current = (float) SDL_GetTicks();
+        float current = (float) SDL_GetTicks();
         if ( current > last + 1000.0f / 60.0f ) {
-            event_callback( &event );
-            render_callback();
+            if ( event_callback ) {
+                event_callback( &event );
+            }
+            if ( render_callback ) {
+                render_callback();
+            }
             SDL_GL_SwapWindow( window );
             last = current;
         }

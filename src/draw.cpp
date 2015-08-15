@@ -1,4 +1,3 @@
-#include <algorithm>
 #include "draw.hpp"
 
 // vec3s screen_to_field( ) {
@@ -12,8 +11,10 @@ gSphere::gSphere( float radius, std::size_t UResolution, std::size_t VResolution
     const float endV = M_2PI;
     const float stepU = ( endU - startU ) / (float) UResolution;
     const float stepV = ( endV - startV ) / (float) VResolution;
-    max_count = UResolution * VResolution * 6;
-    vertex = new float [ max_count * 3 ];
+    const uint8_t vertex_count = 4;
+    const uint8_t coords_count = 3;
+    max_count = UResolution * VResolution * vertex_count;
+    vertex = new float [ max_count * coords_count ];
     std::size_t count = 0;
     for ( std::size_t i = 0; i < UResolution; i++ ) {
         for ( std::size_t j = 0; j < VResolution; j++ ) {
@@ -21,15 +22,11 @@ gSphere::gSphere( float radius, std::size_t UResolution, std::size_t VResolution
             float v = (float) j * stepV + startV;
             float un = (float) ( i + 1 ) * stepU + startU;
             float vn = (float) ( j + 1 ) * stepV + startV;
-            vec3d p0 = vec3d( radius, u, v, true );
-            vec3d p1 = vec3d( radius, un, vn, true );
-            insert_vec3d( count +  0, p0 );
-            insert_vec3d( count +  3, vec3d( radius, un, v, true ) );
-            insert_vec3d( count +  6, p1 );
-            insert_vec3d( count +  9, p0 );
-            insert_vec3d( count + 12, p1 );
-            insert_vec3d( count + 15, vec3d( radius, u, vn, true ) );
-            count += 18;
+            insert_vec3d( count + 0, vec3d( radius, un, v, true ) );
+            insert_vec3d( count + 3, vec3d( radius, un, vn, true ) );
+            insert_vec3d( count + 6, vec3d( radius, u, v, true ) );
+            insert_vec3d( count + 9, vec3d( radius, u, vn, true ) );
+            count += vertex_count * coords_count;
         }
     }
 }
@@ -37,7 +34,7 @@ gSphere::gSphere( float radius, std::size_t UResolution, std::size_t VResolution
 void gSphere::draw() {
     glEnableClientState( GL_VERTEX_ARRAY );
     glVertexPointer( 3, GL_FLOAT, 0, vertex );
-    glDrawArrays( GL_TRIANGLES, 0, max_count );
+    glDrawArrays( GL_TRIANGLE_STRIP, 0, max_count );
     glDisableClientState( GL_VERTEX_ARRAY ); 
 }
 

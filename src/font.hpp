@@ -17,7 +17,7 @@ public:
     ~gFont();
 private:
     const uint16_t FONT_LIST_SIZE = 256;
-    void make_dlist( FT_Face face, int ch );
+    void make_dlist( FT_Face face, uint16_t ch );
     GLuint * tex;
     GLuint list;
 };

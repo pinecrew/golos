@@ -27,7 +27,7 @@ private:
     std::string windowname;
     bool quit_flag = false;
     int width, height;
-    void ( *init_callback )( void );
-    void ( *render_callback )( void );
-    void ( *event_callback )( SDL_Event * event );
+    void ( *init_callback )( void ) = nullptr;
+    void ( *render_callback )( void ) = nullptr;
+    void ( *event_callback )( SDL_Event * event ) = nullptr;
 };

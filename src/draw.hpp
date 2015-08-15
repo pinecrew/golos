@@ -1,6 +1,8 @@
 #pragma once
 #include <SDL2/SDL.h>
 #include <GL/gl.h>
+#include <algorithm>
+#include <cstring>
 #include "field.hpp"
 
 class gSphere {
