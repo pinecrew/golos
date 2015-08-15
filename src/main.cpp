@@ -64,6 +64,9 @@ void golos_init( void ) {
 }
 
 void golos_event( SDL_Event * event ) {
+    static uint8_t button_left_set = false;
+    static uint8_t button_right_set = false;
+    static uint16_t mouse_x = 0, mouse_y = 0;
     SDL_PollEvent( event );
     switch ( event->type ) {
         case SDL_QUIT:
@@ -93,6 +96,33 @@ void golos_event( SDL_Event * event ) {
                 default:
                     break;
             }
+            break;
+        case SDL_MOUSEMOTION:
+            if ( button_left_set ) {
+                camera.rotate( -( event->button.y - mouse_y ) / 100.0f,
+                               -( event->button.x - mouse_x ) / 100.0f );
+                mouse_x = event->button.x;
+                mouse_y = event->button.y;
+            }
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+            switch ( event->button.button ) {
+                case SDL_BUTTON_LEFT:
+                    if ( !button_left_set ) {
+                        mouse_x = event->button.x;
+                        mouse_y = event->button.y;
+                    }
+                    button_left_set = true;
+                    break;
+                case SDL_BUTTON_RIGHT:
+                    button_right_set = true;
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case SDL_MOUSEBUTTONUP:
+            button_left_set = button_right_set = false;
             break;
         default:
             break;
