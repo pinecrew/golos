@@ -1,4 +1,6 @@
-varying vec4 texCoords;
+varying vec3 light;
+varying vec3 normal;
+varying vec3 texCoords;
 uniform sampler2D mytexture;
 
 void main(void) {
@@ -14,5 +16,8 @@ void main(void) {
 
     vec4 alive = vec4(0.4, 1.0, 0.4, 1.0);
     vec4 dead = vec4(0.4, 0.4, 1.0, 1.0);
-    gl_FragColor = (color.r < 0.5) ? dead : alive;
+    vec3 n = normalize( normal );
+    vec3 l = normalize( light );
+    float intensity = 0.1 + 0.9 * max ( dot( n, l ), 0.0 );
+    gl_FragColor =  intensity * ((color.r < 0.5) ? dead : alive);
 }

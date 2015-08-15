@@ -35,7 +35,7 @@ void gSphere::draw() {
     glEnableClientState( GL_VERTEX_ARRAY );
     glVertexPointer( 3, GL_FLOAT, 0, vertex );
     glDrawArrays( GL_TRIANGLE_STRIP, 0, max_count );
-    glDisableClientState( GL_VERTEX_ARRAY ); 
+    glDisableClientState( GL_VERTEX_ARRAY );
 }
 
 gSphere::~gSphere() {

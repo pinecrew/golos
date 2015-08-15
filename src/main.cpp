@@ -9,12 +9,16 @@
 #include "shader.hpp"
 #include "font.hpp"
 
-vec3s camera = {3,M_PI/4,0}; // положение камеры в сферических координатах
+vec3s camera = {5,M_PI/4,0}; // положение камеры в сферических координатах
+vec3s sun_pos = {3, M_PI/2,M_PI/2};
 float dtheta = 0.01;
 float dphi = 0.01;
 GLuint program;
 gSphere sphere( 1.0f, 30, 60 );
+gSphere sun( 0.2f, 30, 60 );
 gFont font;
+
+//float light_position[4] = {2.0, 2.0, 2.0, 1.0};
 
 int rows = 30;
 int cols = 60;
@@ -35,11 +39,19 @@ void golos_init( void ) {
     gluPerspective( 60.0f, (float) window.GetWidth() / (float) window.GetHeight(), 0.1f, 100.0f );
     glMatrixMode( GL_MODELVIEW );
     glewInit();
+
+
+    glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+
     program = glCreateProgram();
     auto shader = compileShader( "./shaders/fragment.glsl", GL_FRAGMENT_SHADER );
-    addShader( program, shader );
-    shader = compileShader("./shaders/vertex.glsl", GL_VERTEX_SHADER );
-    addShader( program, shader );
+    glAttachShader( program, shader );
+    shader = compileShader( "./shaders/vertex.glsl", GL_VERTEX_SHADER );
+    glAttachShader( program, shader );
+    glLinkProgram( program );
+    printInfoLog( program );
 
     f = new field( rows, cols );
     // рандомная инициализация
@@ -89,12 +101,24 @@ void golos_event( SDL_Event * event ) {
 
 void golos_render( void ) {
     vec3d rect_camera = vec3d(camera); // положение камеры в прямоугольных координатах
+    vec3d rect_sun = vec3d(sun_pos);
+    sun_pos.rotate(0, dphi/3);
 
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     glLoadIdentity();
 
     float up = (camera.theta < 0) ? -1.0 : 1.0; // фикс для gluLookAt
     gluLookAt( rect_camera.x, rect_camera.y, rect_camera.z, 0, 0, 0, 0, 0, up );
+
+    // рисуем солнышко (потом добавлю шейдер)
+    glPushMatrix();
+        glTranslatef(rect_sun.x, rect_sun.y, rect_sun.z);
+        glColor3f(1.0, 1.0, 0.0);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        sun.draw();
+        float light_position[4] = {0, 0, 0, 1};
+        glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    glPopMatrix();
 
     // врубаем шейдеры
     glUseProgram( program );
@@ -117,8 +141,7 @@ void golos_render( void ) {
     // рисуем сферу
     sphere.draw();
 
-    // вырубаем шейдеры
-    glUseProgram(0);
+    glUseProgram( 0 );
 
     // для нормального отображения текста
     glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );

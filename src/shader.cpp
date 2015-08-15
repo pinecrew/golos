@@ -36,6 +36,15 @@ GLuint compileShader(const char* fileName, GLenum shaderType) {
 }
 
 void addShader(GLuint program, GLuint shader) {
-    glAttachShader(program, shader);
-    glLinkProgram(program);
 };
+
+void printInfoLog(GLuint program) {
+	int log_size = 0;
+	int bytes_written = 0;
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_size);
+	if (!log_size) return;
+	char *infoLog = new char[log_size];
+	glGetProgramInfoLog(program, log_size, &bytes_written, infoLog);
+	std::cerr << infoLog << std::endl;
+	delete [] infoLog;
+}
