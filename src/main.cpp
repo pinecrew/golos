@@ -18,7 +18,7 @@ float dphi = 0.01;
 
 GLuint program;
 gSphere earth( 1.0f, 30, 60 );
-gSphere venus( 1.0f, 30, 60 );
+gSphere venus( earth );
 gSphere sun( 2.0f, 30, 60 );
 gFont font;
 
@@ -28,6 +28,13 @@ GLubyte* cells;
 field* f;
 
 WindowManager window( "Game Of Life On fieldace" );
+const char output_str[] ="[%s] fps: %.2f; theta: %.2f; phi: %.2f; delay %d";
+const wchar_t * game_status[] = {
+    (const wchar_t *) "pause",
+    (const wchar_t *) "play"
+};
+bool game_step = false;
+uint8_t MAX_COUNT = 5;
 
 void golos_init( void ) {
     // init OpenGL params
@@ -42,6 +49,12 @@ void golos_init( void ) {
     glMatrixMode( GL_MODELVIEW );
     glewInit();
 
+    // включаем отсечение лишнего
+    glEnable( GL_CULL_FACE );
+    // отрисовка против часовой стрелки
+    glFrontFace( GL_CCW );
+    // рисуем только переднюю нормаль
+    glCullFace( GL_BACK );
 
     glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_LIGHTING);
@@ -65,6 +78,12 @@ void golos_init( void ) {
     font.load( "./data/OpenSansLight.ttf", 16 );
 }
 
+void random_fill( void ) {
+    for ( std::size_t i = 0; i < ( f->width * f->height ) / 3; i++ ) {
+        (*f)[rand()%f->height][rand()%f->width] = true;
+    }
+}
+
 void golos_event( SDL_Event * event ) {
     static uint8_t button_left_set = false;
     static uint8_t button_right_set = false;
@@ -77,7 +96,7 @@ void golos_event( SDL_Event * event ) {
         case SDL_KEYDOWN:
             switch ( event->key.keysym.sym ) {
                 case SDLK_SPACE:
-                    f->nextGeneration();
+                    game_step = !game_step;
                     break;
                 case SDLK_ESCAPE:
                 case SDLK_q:
@@ -94,6 +113,24 @@ void golos_event( SDL_Event * event ) {
                     break;
                 case SDLK_LEFT:
                     camera.rotate(0, -dphi);
+                    break;
+                case SDLK_PERIOD:
+                    if ( MAX_COUNT > 0 ) {
+                        MAX_COUNT -= 1;
+                    }
+                    break;
+                case SDLK_COMMA:
+                    MAX_COUNT += 1;
+                    break;
+                case SDLK_f:
+                    random_fill();
+                    break;
+                case SDLK_r:
+                    for ( std::size_t i = 0; i < f->height; i++ ) {
+                        for ( std::size_t j = 0; j < f->width; j++ ) {
+                            (*f)[i][j] = false;
+                        }
+                    }
                     break;
                 default:
                     break;
@@ -135,6 +172,16 @@ void golos_event( SDL_Event * event ) {
     }
 }
 
+void golos_loop( void ) {
+    static int counter = 0;
+    if ( game_step && counter >= MAX_COUNT ) {
+        f->nextGeneration();
+        counter = 0;
+    } else {
+        counter++;
+    }
+}
+
 void golos_render( void ) {
     vec3d rect_camera = vec3d(camera); // положение камеры в прямоугольных координатах
     vec3d rect_earth = vec3d(earth_pos);
@@ -154,6 +201,9 @@ void golos_render( void ) {
                rect_earth.z,
                0, 0, up );
 
+    // нужно выключать использование текстур для обычной отрисовки
+    glDisable( GL_TEXTURE_2D );
+
     // рисуем солнышко (потом добавлю шейдер)
     glColor3f(1.0, 1.0, 1.0);
     sun.draw();
@@ -163,7 +213,7 @@ void golos_render( void ) {
     // рисуем венеру
     glPushMatrix();
         glTranslatef(rect_venus.x, rect_venus.y, rect_venus.z);
-        glColor3f(0.2, 0.3, 0.9); // не работает !!!
+        glColor3f(0.2, 0.3, 0.9); // см. выше
         venus.draw();
     glPopMatrix();
 
@@ -191,13 +241,17 @@ void golos_render( void ) {
         earth.draw();
     glPopMatrix();
     glUseProgram( 0 );
+
     // для нормального отображения текста
-    glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
+    glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE );
     glPushMatrix();
     glLoadIdentity();
     glColor3f( 1.0f, 1.0f, 1.0f );
-    font.draw( 10, 10, "FPS: %.2f", window.GetFPS() );
+    font.draw( 10, 10, output_str, game_status[int(game_step)], window.GetFPS(),
+        camera.theta, camera.phi, MAX_COUNT );
     glPopMatrix();
+
+    golos_loop();
 
     glFlush();
 }
