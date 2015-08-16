@@ -1,4 +1,5 @@
 #include "font.hpp"
+#include <iostream>
 
 static inline int next_p2( int a ) {
     int rval = 1;
@@ -35,68 +36,53 @@ inline void pop_opengl_params() {
     glPopAttrib();
 }
 
-void gFont::make_dlist( FT_Face face, uint16_t ch ) {
-    if ( FT_Load_Glyph( face, FT_Get_Char_Index( face, ch ), FT_LOAD_RENDER ) ) {
-        Panic( "FT_Load_Glyph" );
+void gFont::make_dlist( uint16_t ch ) {
+    SDL_Color color_fg = { 255, 255, 255, 255 };
+    SDL_Color color_bg = { 0, 0, 0, 255 };
+    SDL_Surface * surface = TTF_RenderGlyph_Shaded( font, ch, color_fg, color_bg );
+    if ( surface == nullptr ) {
+        Panic( "TTF_RenderText_Blended" );
     }
-    FT_Glyph glyph;
-    if ( FT_Get_Glyph( face->glyph, &glyph ) ) {
-        Panic( "FT_Get_Glyph" );
-    }
-    FT_Glyph_To_Bitmap( &glyph, ft_render_mode_normal, 0, 1 );
-    FT_BitmapGlyph bitmap_glyph = (FT_BitmapGlyph) glyph;
-    FT_Bitmap bitmap = bitmap_glyph->bitmap;
-    uint16_t width = next_p2( bitmap.width );
-    uint16_t height = next_p2( bitmap.rows );
-    GLubyte * data = new GLubyte [ 2 * width * height ];
-    for ( uint16_t j = 0; j < height; j++) {
-        for ( uint16_t i = 0; i < width; i++ ) {
-            data[2 * (i + j * width) + 0] = 255;
-            data[2 * (i + j * width) + 1] = 
-                ( i >= bitmap.width || j >= bitmap.rows ) ? 0 : bitmap.buffer[i + bitmap.width * j];
-        }
-    }
+    uint16_t width = next_p2( surface->w );
+    uint16_t height = next_p2( surface->h );
+    SDL_Surface * s = SDL_CreateRGBSurface( 0, width, height, 32,
+        0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000 );
+    SDL_BlitSurface( surface, nullptr, s, NULL );
     glBindTexture( GL_TEXTURE_2D, tex[ch] );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, data );
-    delete[] data;
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels );
     glNewList( list + ch, GL_COMPILE );
     glBindTexture( GL_TEXTURE_2D, tex[ch] );
-    glTranslatef( bitmap_glyph->left, 0, 0 );
     glPushMatrix();
-    glTranslatef( 0, bitmap_glyph->top-bitmap.rows, 0 );
-    float x = (float) bitmap.width / (float) width;
-    float y = (float) bitmap.rows / (float) height;
+    float x = (float) surface->w / (float) width;
+    float y = (float) surface->h / (float) height;
     glBegin( GL_TRIANGLE_FAN );
-        glTexCoord2d( x, 0 ); glVertex2f( bitmap.width, bitmap.rows );
-        glTexCoord2d( 0, 0 ); glVertex2f( 0, bitmap.rows );
+        glTexCoord2d( x, 0 ); glVertex2f( surface->w, surface->h );
+        glTexCoord2d( 0, 0 ); glVertex2f( 0, surface->h );
         glTexCoord2d( 0, y ); glVertex2f( 0, 0 );
-        glTexCoord2d( x, y ); glVertex2f( bitmap.width, 0 );
+        glTexCoord2d( x, y ); glVertex2f( surface->w, 0 );
     glEnd();
     glPopMatrix();
-    glTranslatef( face->glyph->advance.x >> 6, 0, 0 );
+    glTranslatef( surface->w, 0, 0 );
     glEndList();
+    SDL_FreeSurface( surface );
 }
 
 void gFont::load( std::string fontname, uint16_t height ) {
     tex = new GLuint[ FONT_LIST_SIZE ];
-    FT_Library lib;
-    if ( FT_Init_FreeType( &lib ) ) {
-        Panic( "FT_Init_FreeType" );
+    if ( TTF_Init() == -1 ) {
+        Panic( TTF_GetError() );
     }
-    FT_Face face;
-    if ( FT_New_Face( lib, fontname.c_str(), 0, &face ) ) {
-        Panic( "FT_New_Face exits" );
+    font = TTF_OpenFont( fontname.c_str(), height );
+    if ( font == nullptr ) {
+        Panic( TTF_GetError() );
     }
-    FT_Set_Char_Size( face, height << 6, height << 6, 96, 96 );
     list = glGenLists( FONT_LIST_SIZE );
     glGenTextures( FONT_LIST_SIZE, tex );
-    for ( uint16_t i = 0; i < FONT_LIST_SIZE; i++ ) {
-        make_dlist( face, i );
+    for ( uint16_t i = 32; i < FONT_LIST_SIZE; i++ ) {
+        make_dlist( i );
     }
-    FT_Done_Face( face );
-    FT_Done_FreeType( lib );
 }
 
 void gFont::draw( float x, float y, const char * fmt, ... ) {
@@ -135,6 +121,8 @@ void gFont::draw( float x, float y, const char * fmt, ... ) {
 }
 
 gFont::~gFont() {
+    TTF_CloseFont( font );
+    TTF_Quit();
     glDeleteTextures( FONT_LIST_SIZE, tex );
     delete[] tex;
 }
