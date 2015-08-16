@@ -75,7 +75,7 @@ void golos_init( void ) {
             (*f)[i][j] = rand() % 2;
     cells = new GLubyte[rows * cols];
 
-    font.load( "./data/OpenSansLight.ttf", 24 );
+    font.load( "./data/FiraSans-Medium.ttf", 16 );
 }
 
 void random_fill( void ) {
