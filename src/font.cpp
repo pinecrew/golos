@@ -38,8 +38,7 @@ inline void pop_opengl_params() {
 
 void gFont::make_dlist( uint16_t ch ) {
     SDL_Color color_fg = { 255, 255, 255, 255 };
-    SDL_Color color_bg = { 0, 0, 0, 255 };
-    SDL_Surface * surface = TTF_RenderGlyph_Shaded( font, ch, color_fg, color_bg );
+    SDL_Surface * surface = TTF_RenderGlyph_Blended( font, ch, color_fg );
     if ( surface == nullptr ) {
         Panic( "TTF_RenderText_Blended" );
     }
