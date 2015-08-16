@@ -4,6 +4,13 @@
     // TODO
 // }
 
+gSphere::gSphere( const gSphere & sphere ) {
+    max_count = sphere.max_count;
+    size_t copy_count = max_count * coords_count * vertex_count;
+    vertex = new float [ copy_count ];
+    std::memcpy( (void *) vertex, (void *) sphere.vertex, copy_count );
+}
+
 gSphere::gSphere( float radius, std::size_t UResolution, std::size_t VResolution ) {
     const float startU = 0.0f;
     const float startV = 0.0f;
@@ -11,8 +18,6 @@ gSphere::gSphere( float radius, std::size_t UResolution, std::size_t VResolution
     const float endV = M_2PI;
     const float stepU = ( endU - startU ) / (float) UResolution;
     const float stepV = ( endV - startV ) / (float) VResolution;
-    const uint8_t vertex_count = 4;
-    const uint8_t coords_count = 3;
     max_count = UResolution * VResolution * vertex_count;
     vertex = new float [ max_count * coords_count ];
     std::size_t count = 0;
