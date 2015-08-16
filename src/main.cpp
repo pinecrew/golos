@@ -9,16 +9,18 @@
 #include "shader.hpp"
 #include "font.hpp"
 
-vec3s camera = {5,M_PI/4,0}; // положение камеры в сферических координатах
-vec3s sun_pos = {3, M_PI/2,M_PI/2};
+vec3s camera = {30, M_PI/4, 0}; // положение камеры в сферических координатах
+vec3s earth_pos = {18, M_PI/2, M_PI/2};
+vec3s venus_pos = {12, M_PI/2, M_PI/2};
+
 float dtheta = 0.01;
 float dphi = 0.01;
-GLuint program;
-gSphere sphere( 1.0f, 30, 60 );
-gSphere sun( 0.2f, 30, 60 );
-gFont font;
 
-//float light_position[4] = {2.0, 2.0, 2.0, 1.0};
+GLuint program;
+gSphere earth( 1.0f, 30, 60 );
+gSphere venus( 1.0f, 30, 60 );
+gSphere sun( 2.0f, 30, 60 );
+gFont font;
 
 int rows = 30;
 int cols = 60;
@@ -105,6 +107,10 @@ void golos_event( SDL_Event * event ) {
                 mouse_y = event->button.y;
             }
             break;
+        case SDL_MOUSEWHEEL:
+                camera.r += event->wheel.y * camera.r / 60.0;
+                event->wheel.y = 0;
+            break;
         case SDL_MOUSEBUTTONDOWN:
             switch ( event->button.button ) {
                 case SDL_BUTTON_LEFT:
@@ -131,27 +137,36 @@ void golos_event( SDL_Event * event ) {
 
 void golos_render( void ) {
     vec3d rect_camera = vec3d(camera); // положение камеры в прямоугольных координатах
-    vec3d rect_sun = vec3d(sun_pos);
-    sun_pos.rotate(0, dphi/3);
+    vec3d rect_earth = vec3d(earth_pos);
+    vec3d rect_venus = vec3d(venus_pos);
+    earth_pos.rotate(0, dphi / 3);
+    venus_pos.rotate(0, 1.8 * dphi / 3);
 
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     glLoadIdentity();
 
     float up = (camera.theta < 0) ? -1.0 : 1.0; // фикс для gluLookAt
-    gluLookAt( rect_camera.x, rect_camera.y, rect_camera.z, 0, 0, 0, 0, 0, up );
+    gluLookAt( rect_earth.x + rect_camera.x,
+               rect_earth.y + rect_camera.y,
+               rect_earth.z + rect_camera.z,
+               rect_earth.x,
+               rect_earth.y,
+               rect_earth.z,
+               0, 0, up );
 
     // рисуем солнышко (потом добавлю шейдер)
+    glColor3f(1.0, 1.0, 1.0);
+    sun.draw();
+    float light_position[4] = {0, 0, 0, 1};
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+    // рисуем венеру
     glPushMatrix();
-        glTranslatef(rect_sun.x, rect_sun.y, rect_sun.z);
-        glColor3f(1.0, 1.0, 0.0);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        sun.draw();
-        float light_position[4] = {0, 0, 0, 1};
-        glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+        glTranslatef(rect_venus.x, rect_venus.y, rect_venus.z);
+        glColor3f(0.2, 0.3, 0.9); // не работает !!!
+        venus.draw();
     glPopMatrix();
 
-    // врубаем шейдеры
-    glUseProgram( program );
 
     // формируем текстуру
 
@@ -168,11 +183,14 @@ void golos_render( void ) {
     glEnable( GL_TEXTURE_2D );
     glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
 
-    // рисуем сферу
-    sphere.draw();
-
+    // врубаем шейдеры
+    glUseProgram( program );
+    // рисуем Землю
+    glPushMatrix();
+        glTranslatef(rect_earth.x, rect_earth.y, rect_earth.z);
+        earth.draw();
+    glPopMatrix();
     glUseProgram( 0 );
-
     // для нормального отображения текста
     glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
     glPushMatrix();
