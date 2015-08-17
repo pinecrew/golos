@@ -13,8 +13,9 @@ ShaderProgram::~ShaderProgram() {
 char* readFile(const char* fileName) {
     std::ifstream is(fileName, std::ios::in|std::ios::binary|std::ios::ate);
 	if (!is.is_open()) {
-		std::cerr << "Unable to open file " << fileName << std::endl;
-		exit(1);
+        std::string tmp = "Unable to open file ";
+        tmp += fileName;
+        Panic( tmp.c_str() );
 	}
 
 	long size = is.tellg();
