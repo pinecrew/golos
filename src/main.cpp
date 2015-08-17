@@ -71,7 +71,7 @@ void golos_init( void ) {
 
     venusShader = new ShaderProgram();
     venusShader->addShader( "./shaders/sphere.vert.glsl", GL_VERTEX_SHADER );
-    earthShader->addShader( "./shaders/venus.frag.glsl", GL_FRAGMENT_SHADER );
+    venusShader->addShader( "./shaders/venus.frag.glsl", GL_FRAGMENT_SHADER );
     venusShader->link();
 
     sunShader = new ShaderProgram();
