@@ -18,6 +18,6 @@ void main(void) {
     vec4 dead = vec4(0.4, 0.4, 1.0, 1.0);
     vec3 n = normalize( normal );
     vec3 l = normalize( light );
-    float intensity = 0.1 + 0.9 * max ( dot( n, l ), 0.0 );
+    float intensity = 0.3 + 0.7 * max ( dot( n, l ), 0.0 );
     gl_FragColor =  intensity * ((color.r < 0.5) ? dead : alive);
 }

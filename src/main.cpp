@@ -2,6 +2,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <iostream>
+#include <SOIL/SOIL.h>
 #include "draw.hpp"
 #include "math.hpp"
 #include "vectors.hpp"
@@ -16,7 +17,10 @@ vec3s venus_pos = {12, M_PI/2, M_PI/2};
 float dtheta = 0.01;
 float dphi = 0.01;
 
-GLuint program;
+GLuint venusTextureId;
+
+ShaderProgram *sunShader, *earthShader, *venusShader;
+
 gSphere earth( 1.0f, 30, 60 );
 gSphere venus( earth );
 gSphere sun( 2.0f, 30, 60 );
@@ -60,13 +64,19 @@ void golos_init( void ) {
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
 
-    program = glCreateProgram();
-    auto shader = compileShader( "./shaders/fragment.glsl", GL_FRAGMENT_SHADER );
-    glAttachShader( program, shader );
-    shader = compileShader( "./shaders/vertex.glsl", GL_VERTEX_SHADER );
-    glAttachShader( program, shader );
-    glLinkProgram( program );
-    printInfoLog( program );
+    earthShader = new ShaderProgram();
+    earthShader->addShader( "./shaders/sphere.vert.glsl", GL_VERTEX_SHADER );
+    earthShader->addShader( "./shaders/earth.frag.glsl", GL_FRAGMENT_SHADER );
+    earthShader->link();
+
+    venusShader = new ShaderProgram();
+    venusShader->addShader( "./shaders/sphere.vert.glsl", GL_VERTEX_SHADER );
+    earthShader->addShader( "./shaders/venus.frag.glsl", GL_FRAGMENT_SHADER );
+    venusShader->link();
+
+    sunShader = new ShaderProgram();
+    sunShader->addShader( "./shaders/sun.frag.glsl", GL_FRAGMENT_SHADER );
+    sunShader->link();
 
     f = new field( rows, cols );
     // рандомная инициализация
@@ -76,6 +86,15 @@ void golos_init( void ) {
     cells = new GLubyte[rows * cols];
 
     font.load( "./data/FiraSans-Medium.ttf", 16 );
+
+    venusTextureId = SOIL_load_OGL_texture
+    (
+    "./data/venus.jpg",
+    SOIL_LOAD_AUTO,
+    SOIL_CREATE_NEW_ID,
+    SOIL_FLAG_INVERT_Y | SOIL_FLAG_TEXTURE_REPEATS
+    );
+
 }
 
 void random_fill( void ) {
@@ -204,18 +223,23 @@ void golos_render( void ) {
     // нужно выключать использование текстур для обычной отрисовки
     glDisable( GL_TEXTURE_2D );
 
-    // рисуем солнышко (потом добавлю шейдер)
-    glColor3f(1.0, 1.0, 1.0);
-    sun.draw();
     float light_position[4] = {0, 0, 0, 1};
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    // рисуем солнышко (потом добавлю шейдер)
+    sunShader->run();
+    sun.draw();
+    sunShader->stop();
 
     // рисуем венеру
+    glEnable( GL_TEXTURE_2D );
+    glBindTexture( GL_TEXTURE_2D, venusTextureId );
+
+    venusShader->run();
     glPushMatrix();
         glTranslatef(rect_venus.x, rect_venus.y, rect_venus.z);
-        glColor3f(0.2, 0.3, 0.9); // см. выше
         venus.draw();
     glPopMatrix();
+    venusShader->stop();
 
 
     // формируем текстуру
@@ -230,17 +254,16 @@ void golos_render( void ) {
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
     glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RED , GL_UNSIGNED_BYTE, cells );
-    glEnable( GL_TEXTURE_2D );
     glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
 
     // врубаем шейдеры
-    glUseProgram( program );
+    earthShader->run();
     // рисуем Землю
     glPushMatrix();
         glTranslatef(rect_earth.x, rect_earth.y, rect_earth.z);
         earth.draw();
     glPopMatrix();
-    glUseProgram( 0 );
+    earthShader->stop();
 
     // для нормального отображения текста
     glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE );
