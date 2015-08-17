@@ -164,7 +164,7 @@ void golos_event( SDL_Event * event ) {
             }
             break;
         case SDL_MOUSEWHEEL:
-                camera.r += event->wheel.y * camera.r / 60.0;
+                camera.r -= event->wheel.y * camera.r / 60.0;
                 event->wheel.y = 0;
             break;
         case SDL_MOUSEBUTTONDOWN:
