@@ -1,9 +1,6 @@
 #pragma once
-#include <SDL2/SDL.h>
 #include <string>
-#include <cstdlib>
-
-void Panic( const char * error );
+#include "error.hpp"
 
 class WindowManager {
 public:
@@ -15,7 +12,6 @@ public:
     void SetEventFunc( void ( *param )( SDL_Event * event ) ) { event_callback = param; }
     float GetFPS( void );
     void KillWindow( void );
-    void Panic( void );
     int GetWidth( void ) { return width; }
     int GetHeight( void ) { return height; }
     ~WindowManager();

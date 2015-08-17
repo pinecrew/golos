@@ -93,4 +93,3 @@ void field::toggle( const vec3s & p ) {
     auto c = cell_from_point( p );
     f[c.first][c.second] = !f[c.first][c.second];
 }
-

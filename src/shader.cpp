@@ -1,7 +1,3 @@
-
-#include <fstream>
-#include <iostream>
-
 #include "shader.hpp"
 
 GLuint compileShader(const char* fileName, GLenum shaderType) {
@@ -12,8 +8,9 @@ GLuint compileShader(const char* fileName, GLenum shaderType) {
     // read the shader source from a file
     std::ifstream is(fileName, std::ios::in|std::ios::binary|std::ios::ate);
 	if (!is.is_open()) {
-		std::cerr << "Unable to open file " << fileName << std::endl;
-		exit(1);
+        std::string error = "Unable to open file ";
+        error += fileName;
+        Panic( error.c_str() );
 	}
 
 	long size = is.tellg();

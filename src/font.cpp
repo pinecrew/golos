@@ -1,5 +1,4 @@
 #include "font.hpp"
-#include <iostream>
 
 static inline int next_p2( int a ) {
     int rval = 1;

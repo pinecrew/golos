@@ -1,16 +1,9 @@
 #include "window.hpp"
 
-void Panic( const char * error ) {
-    std::string error_data = error;
-    error_data += " failure!";
-    SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", error_data.c_str(), nullptr );
-    exit( EXIT_FAILURE );
-}
-
 void WindowManager::MainLoop( void ) {
     // init SDL subsystems
     if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_EVENTS ) ) {
-        Panic();
+        Panic( SDL_GetError() );
     }
     // init double buffer
     SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
@@ -22,7 +15,7 @@ void WindowManager::MainLoop( void ) {
     window = SDL_CreateWindow( windowname.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL );
     if ( window == nullptr ) {
-        Panic();
+        Panic( SDL_GetError() );
     }
     // init OpenGL context
     context = SDL_GL_CreateContext( window );
@@ -61,11 +54,6 @@ float WindowManager::GetFPS( void ) {
 
 void WindowManager::KillWindow( void ) {
     quit_flag = true;
-}
-
-void WindowManager::Panic( void ) {
-    SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", SDL_GetError(), nullptr );
-    exit( EXIT_FAILURE );
 }
 
 WindowManager::~WindowManager() {

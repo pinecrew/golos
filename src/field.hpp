@@ -18,6 +18,3 @@ class field {
         void toggle( const vec3s & p );
         field(std::size_t h, std::size_t w);
 };
-
-
-

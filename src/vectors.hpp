@@ -16,4 +16,3 @@ struct vec3d {
     vec3d( const float _x, const float _y, const float _z, bool polar = false );
     float operator*( const vec3d & v );
 };
-

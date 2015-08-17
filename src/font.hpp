@@ -3,10 +3,11 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <cstdarg>
-#include <cstdlib>
 #include <cstdint>
+#include <iostream>
+#include <string>
 #include <wchar.h>
-#include "window.hpp"
+#include "error.hpp"
 
 class gFont {
 public:
