@@ -2,7 +2,6 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <iostream>
-#include <SDL_image.h>
 #include "draw.hpp"
 #include "math.hpp"
 #include "vectors.hpp"
@@ -21,9 +20,7 @@ GLuint venusTextureId;
 
 ShaderProgram *sunShader, *earthShader, *venusShader;
 
-gSphere earth( 1.0f, 30, 60 );
-gSphere venus( earth );
-gSphere sun( 2.0f, 30, 60 );
+gSphere sphere( 30, 60 );
 gFont font;
 
 int rows = 30;
@@ -87,21 +84,9 @@ void golos_init( void ) {
 
     font.load( "./data/FiraSans-Medium.ttf", 16 );
 
-    SDL_Surface* Surface = IMG_Load("./data/venus.jpg");
-
-    glGenTextures(1, &venusTextureId);
-    glBindTexture(GL_TEXTURE_2D, venusTextureId);
-
-    int Mode = GL_RGB;
-
-    if(Surface->format->BytesPerPixel == 4) {
-        Mode = GL_RGBA;
-    }
-
-    glTexImage2D(GL_TEXTURE_2D, 0, Mode, Surface->w, Surface->h, 0, Mode, GL_UNSIGNED_BYTE, Surface->pixels);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    gLoadImage( "./data/venus.jpg", venusTextureId );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 }
 
 void random_fill( void ) {
@@ -234,7 +219,7 @@ void golos_render( void ) {
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     // рисуем солнышко (потом добавлю шейдер)
     sunShader->run();
-    sun.draw();
+    sphere.draw( 2.0f );
     sunShader->stop();
 
     // рисуем венеру
@@ -242,12 +227,8 @@ void golos_render( void ) {
     glBindTexture( GL_TEXTURE_2D, venusTextureId );
 
     venusShader->run();
-    glPushMatrix();
-        glTranslatef(rect_venus.x, rect_venus.y, rect_venus.z);
-        venus.draw();
-    glPopMatrix();
+    sphere.draw( 1.0f, rect_venus );
     venusShader->stop();
-
 
     // формируем текстуру
 
@@ -266,10 +247,7 @@ void golos_render( void ) {
     // врубаем шейдеры
     earthShader->run();
     // рисуем Землю
-    glPushMatrix();
-        glTranslatef(rect_earth.x, rect_earth.y, rect_earth.z);
-        earth.draw();
-    glPopMatrix();
+    sphere.draw( 1.0f, rect_earth );
     earthShader->stop();
 
     // для нормального отображения текста

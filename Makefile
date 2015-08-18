@@ -6,6 +6,11 @@ PLATFORM = $(shell uname -s)
 ifeq ($(RELEASE), 1)
 	LFLAGS += -O3
 endif
+ifeq ($(COMPACT), 1)
+	CFLAGS += -ffreestanding -fno-inline -fdata-sections -ffunction-sections \
+		-fno-exceptions -fno-asynchronous-unwind-tables
+	LFLAGS += -Os 
+endif
 ifeq ($(DEBUG), 1)
 	LFLAGS += -ggdb -g3 -pg -O0
 endif
@@ -24,6 +29,9 @@ all: $(dest_dir)$(target_file)
 
 $(dest_dir)$(target_file): $(object_files)
 	$(CXX) $(object_files) -o $(prog_name) $(LFLAGS)
+
+strip:
+	strip -s $(prog_name)*
 
 %.o: %.cpp
 	$(CXX) $(CFLAGS) -c $< -o $@
