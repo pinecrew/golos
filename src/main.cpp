@@ -17,6 +17,8 @@ float dtheta = 0.01;
 float dphi = 0.01;
 
 GLuint venusTextureId;
+GLuint venusNormalsId;
+GLuint earthTextureId;
 
 ShaderProgram *sunShader, *earthShader, *venusShader;
 
@@ -85,8 +87,8 @@ void golos_init( void ) {
     font.load( "./data/FiraSans-Medium.ttf", 16 );
 
     gLoadImage( "./data/venus.jpg", venusTextureId );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    gLoadImage( "./data/venus_normalmap.jpg", venusNormalsId );
+    glGenTextures(1, &earthTextureId);
 }
 
 void random_fill( void ) {
@@ -204,12 +206,12 @@ void golos_render( void ) {
     glLoadIdentity();
 
     float up = (camera.theta < 0) ? -1.0 : 1.0; // фикс для gluLookAt
-    gluLookAt( rect_earth.x + rect_camera.x,
-               rect_earth.y + rect_camera.y,
-               rect_earth.z + rect_camera.z,
-               rect_earth.x,
-               rect_earth.y,
-               rect_earth.z,
+    gluLookAt( rect_venus.x + rect_camera.x,
+               rect_venus.y + rect_camera.y,
+               rect_venus.z + rect_camera.z,
+               rect_venus.x,
+               rect_venus.y,
+               rect_venus.z,
                0, 0, up );
 
     // нужно выключать использование текстур для обычной отрисовки
@@ -224,9 +226,19 @@ void golos_render( void ) {
 
     // рисуем венеру
     glEnable( GL_TEXTURE_2D );
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture( GL_TEXTURE_2D, venusTextureId );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture( GL_TEXTURE_2D, venusNormalsId );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
     venusShader->run();
+    venusShader->uniform1i("surface", 0);
+    venusShader->uniform1i("normals", 1);
     sphere.draw( 1.0f, rect_venus );
     venusShader->stop();
 
@@ -237,7 +249,8 @@ void golos_render( void ) {
             cells[i * cols + j] = ( (*f)[i][j] ) ? 0xff : 0x00;
 
     // отдаём текстуру
-    glBindTexture( GL_TEXTURE_2D, 1 );
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture( GL_TEXTURE_2D, earthTextureId );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );

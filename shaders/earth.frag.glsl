@@ -1,7 +1,7 @@
 varying vec3 light;
 varying vec3 normal;
 varying vec3 texCoords;
-uniform sampler2D mytexture;
+uniform sampler2D surface;
 
 void main(void) {
     vec2 longitudeLatitude = vec2((atan(texCoords.y, texCoords.x) / 3.1415926 + 1.0) * 0.5,
@@ -9,7 +9,7 @@ void main(void) {
         // processing of the texture coordinates;
         // this is unnecessary if correct texture coordinates are specified by the application
 
-    vec4 color = texture2D(mytexture, longitudeLatitude);
+    vec4 color = texture2D(surface, longitudeLatitude);
         // look up the color of the texture image specified by the uniform "mytexture"
         // at the position specified by "longitudeLatitude.x" and
         // "longitudeLatitude.y" and return it in "gl_FragColor"
