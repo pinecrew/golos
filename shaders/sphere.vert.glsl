@@ -1,6 +1,7 @@
 varying vec3 light;
 varying vec3 normal;
 varying vec3 texCoords;
+varying vec4 shadowCoord;
 
 void main(void) {
     vec4 v = gl_ModelViewMatrix * gl_Vertex;
@@ -9,4 +10,5 @@ void main(void) {
 
     gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
     texCoords = normalize( vec3( gl_Vertex ));
+    shadowCoord = gl_TextureMatrix[7] * gl_Vertex;
 }

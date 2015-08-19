@@ -9,18 +9,21 @@
 #include "shader.hpp"
 #include "font.hpp"
 
-vec3s camera = {30, M_PI/4, 0}; // положение камеры в сферических координатах
-vec3s earth_pos = {18, M_PI/2, M_PI/2};
-vec3s venus_pos = {12, M_PI/2, M_PI/2};
+vec3s camera = {10, M_PI/4, 0}; // положение камеры в сферических координатах
+vec3s sun_pos = {30, M_PI/2, M_PI/2};
+vec3s moon_pos = {9, M_PI/2, M_PI/2};
 
+float smRatio = 2.0;
 float dtheta = 0.01;
 float dphi = 0.01;
 
-GLuint venusTextureId;
-GLuint venusNormalsId;
+GLuint moonTextureId;
+GLuint moonNormalsId;
 GLuint earthTextureId;
+GLuint fboId;
+GLuint depthTextureId;
 
-ShaderProgram *sunShader, *earthShader, *venusShader;
+ShaderProgram *sunShader, *earthShader, *moonShader;
 
 gSphere sphere( 30, 60 );
 gFont font;
@@ -38,6 +41,92 @@ const wchar_t * game_status[] = {
 };
 bool game_step = false;
 uint8_t MAX_COUNT = 5;
+
+void generateShadowFBO() {
+  int shadowMapWidth = window.GetWidth() * smRatio;
+  int shadowMapHeight = window.GetHeight() * smRatio;
+
+  GLenum FBOstatus;
+
+  // Try to use a texture depth component
+  glGenTextures(1, &depthTextureId);
+  glBindTexture(GL_TEXTURE_2D, depthTextureId);
+
+  // GL_LINEAR does not make sense for depth texture. However, next tutorial shows usage of GL_LINEAR and PCF
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  // Remove artifact on the edges of the shadowmap
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
+
+  // No need to force GL_DEPTH_COMPONENT24, drivers usually give you the max precision if available
+  glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowMapWidth, shadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  // create a framebuffer object
+  glGenFramebuffers(1, &fboId);
+  glBindFramebuffer(GL_FRAMEBUFFER, fboId);
+
+  // Instruct openGL that we won't bind a color texture with the currently bound FBO
+  glDrawBuffer(GL_NONE);
+  glReadBuffer(GL_NONE);
+
+  // attach the texture to FBO depth attachment point
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D, depthTextureId, 0);
+
+  // check FBO status
+  FBOstatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  if(FBOstatus != GL_FRAMEBUFFER_COMPLETE)
+      printf("GL_FRAMEBUFFER_COMPLETE failed, CANNOT use FBO\n");
+
+  // switch back to window-system-provided framebuffer
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void setTextureMatrix(void) {
+    static double modelView[16];
+    static double projection[16];
+
+    // Moving from unit cube [-1,1] to [0,1]
+    const GLdouble bias[16] = {
+        0.5, 0.0, 0.0, 0.0,
+        0.0, 0.5, 0.0, 0.0,
+        0.0, 0.0, 0.5, 0.0,
+    0.5, 0.5, 0.5, 1.0};
+
+    // Grab modelview and transformation matrices
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
+    glGetDoublev(GL_PROJECTION_MATRIX, projection);
+
+
+    glMatrixMode(GL_TEXTURE);
+    glActiveTextureARB(GL_TEXTURE7);
+
+    glLoadIdentity();
+    glLoadMatrixd(bias);
+
+    // concatating all matrices into one.
+    glMultMatrixd (projection);
+    glMultMatrixd (modelView);
+
+    // Go back to normal matrix mode
+    glMatrixMode(GL_MODELVIEW);
+}
+
+void setupMatrices(vec3s position, vec3s lookAt) {
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+    gluPerspective( 60.0f, (float) window.GetWidth() / (float) window.GetHeight(), 0.1f, 100.0f );
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+    auto rPos = vec3d(position);
+    auto rLook = vec3d(lookAt);
+    float up = (camera.theta < 0) ? -1.0 : 1.0; // фикс для gluLookAt
+	gluLookAt(rPos.x,rPos.y,rPos.z,rLook.x,rLook.y,rLook.z,0,0,up);
+}
+
+
 
 void golos_init( void ) {
     // init OpenGL params
@@ -68,10 +157,10 @@ void golos_init( void ) {
     earthShader->addShader( "./shaders/earth.frag.glsl", GL_FRAGMENT_SHADER );
     earthShader->link();
 
-    venusShader = new ShaderProgram();
-    venusShader->addShader( "./shaders/sphere.vert.glsl", GL_VERTEX_SHADER );
-    venusShader->addShader( "./shaders/venus.frag.glsl", GL_FRAGMENT_SHADER );
-    venusShader->link();
+    moonShader = new ShaderProgram();
+    moonShader->addShader( "./shaders/sphere.vert.glsl", GL_VERTEX_SHADER );
+    moonShader->addShader( "./shaders/moon.frag.glsl", GL_FRAGMENT_SHADER );
+    moonShader->link();
 
     sunShader = new ShaderProgram();
     sunShader->addShader( "./shaders/sun.frag.glsl", GL_FRAGMENT_SHADER );
@@ -86,9 +175,11 @@ void golos_init( void ) {
 
     font.load( "./data/FiraSans-Medium.ttf", 16 );
 
-    gLoadImage( "./data/venus.jpg", venusTextureId );
-    gLoadImage( "./data/venus_normalmap.jpg", venusNormalsId );
+    gLoadImage( "./data/moon.png", moonTextureId );
+    gLoadImage( "./data/moon_normalmap.jpg", moonNormalsId );
     glGenTextures(1, &earthTextureId);
+
+    generateShadowFBO();
 }
 
 void random_fill( void ) {
@@ -196,51 +287,73 @@ void golos_loop( void ) {
 }
 
 void golos_render( void ) {
-    vec3d rect_camera = vec3d(camera); // положение камеры в прямоугольных координатах
-    vec3d rect_earth = vec3d(earth_pos);
-    vec3d rect_venus = vec3d(venus_pos);
-    earth_pos.rotate(0, dphi / 3);
-    venus_pos.rotate(0, 1.8 * dphi / 3);
+    vec3d rect_earth = vec3d(0, 0, 0);
+    vec3d rect_sun = vec3d(sun_pos);
+    vec3d rect_moon = vec3d(moon_pos);
+    sun_pos.rotate(0, dphi / 3);
+    moon_pos.rotate(0, 5 * dphi / 3);
 
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-    glLoadIdentity();
 
-    float up = (camera.theta < 0) ? -1.0 : 1.0; // фикс для gluLookAt
-    gluLookAt( rect_venus.x + rect_camera.x,
-               rect_venus.y + rect_camera.y,
-               rect_venus.z + rect_camera.z,
-               rect_venus.x,
-               rect_venus.y,
-               rect_venus.z,
-               0, 0, up );
+	//First step: Render from the light POV to a FBO, story depth values only
+    glBindFramebuffer(GL_FRAMEBUFFER,fboId);	//Rendering offscreen
+	// In the case we render the shadowmap to a higher resolution, the viewport must be modified accordingly.
+    glViewport(0,0, window.GetWidth() * smRatio, window.GetHeight() * smRatio);
+    // Clear previous frame values
+    glClear( GL_DEPTH_BUFFER_BIT);
+    //Disable color rendering, we only want to write to the Z-Buffer
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    setupMatrices(sun_pos, {0,0,0});
+    // Culling switching, rendering only backface, this is done to avoid self-shadowing
+    glCullFace(GL_FRONT);
+    sphere.draw( 0.3f, rect_moon );
+    sphere.draw( 1.0f, rect_earth );
+    //Save modelview/projection matrice into texture7, also add a biais
+    setTextureMatrix();
+    // Now rendering from the camera POV, using the FBO to generate shadows
+    glBindFramebuffer(GL_FRAMEBUFFER,0);
+    glViewport(0,0,window.GetWidth(), window.GetHeight());
 
-    // нужно выключать использование текстур для обычной отрисовки
-    glDisable( GL_TEXTURE_2D );
+    //Enabling color write (previously disabled for light POV z-buffer rendering)
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
-    float light_position[4] = {0, 0, 0, 1};
+    // Clear previous frame values
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    setupMatrices(camera, {0, 0, 0});
+
+	glActiveTexture(GL_TEXTURE7);
+	glBindTexture(GL_TEXTURE_2D, depthTextureId);
+
+    //// нужно выключать использование текстур для обычной отрисовки
+    //glDisable( GL_TEXTURE_2D );
+
+    float light_position[4] = {rect_sun.x, rect_sun.y, rect_sun.z, 1};
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     // рисуем солнышко (потом добавлю шейдер)
     sunShader->run();
-    sphere.draw( 2.0f );
+    sphere.draw( 2.0f, rect_sun );
     sunShader->stop();
 
     // рисуем венеру
     glEnable( GL_TEXTURE_2D );
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture( GL_TEXTURE_2D, venusTextureId );
+    glBindTexture( GL_TEXTURE_2D, moonTextureId );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture( GL_TEXTURE_2D, venusNormalsId );
+    glBindTexture( GL_TEXTURE_2D, moonNormalsId );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
-    venusShader->run();
-    venusShader->uniform1i("surface", 0);
-    venusShader->uniform1i("normals", 1);
-    sphere.draw( 1.0f, rect_venus );
-    venusShader->stop();
+
+
+    moonShader->run();
+    moonShader->uniform1i("surface", 0);
+    moonShader->uniform1i("normals", 1);
+    moonShader->uniform1i("shadowMap", 7);
+    sphere.draw( 0.3f, rect_moon );
+    moonShader->stop();
 
     // формируем текстуру
 
@@ -260,6 +373,7 @@ void golos_render( void ) {
     // врубаем шейдеры
     earthShader->run();
     // рисуем Землю
+    earthShader->uniform1i("shadowMap", 7);
     sphere.draw( 1.0f, rect_earth );
     earthShader->stop();
 
