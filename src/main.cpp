@@ -315,7 +315,8 @@ void golos_render( void ) {
     glClear( GL_DEPTH_BUFFER_BIT);
     //Disable color rendering, we only want to write to the Z-Buffer
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-    setupMatrices(sun_pos, {0,0,0});
+    // dirty hack :)
+    setupMatrices( { 0, 0, 0 }, moon_pos );
     // Culling switching, rendering only backface, this is done to avoid self-shadowing
     glCullFace( GL_FRONT );
     sphere.draw( 0.3f, rect_moon );
@@ -338,7 +339,7 @@ void golos_render( void ) {
 	glBindTexture(GL_TEXTURE_2D, depthTextureId);
 
     //// нужно выключать использование текстур для обычной отрисовки
-    //glDisable( GL_TEXTURE_2D );
+    // glDisable( GL_TEXTURE_2D );
 
     float light_position[4] = {rect_sun.x, rect_sun.y, rect_sun.z, 1};
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
