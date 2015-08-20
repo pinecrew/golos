@@ -7,6 +7,8 @@
 #include "vectors.hpp"
 #include "field.hpp"
 
+// vec3d field_to_screen( vec3s sp, vec3s n, SDL_Point center );
+// vec3s screen_to_field( SDL_Point p, vec3s n, SDL_Point c, vec3s camera );
 void gLoadImage( const char * filename, GLuint & tex );
 
 class gSphere {
@@ -22,5 +24,3 @@ private:
     std::size_t max_count;
     float * vertex;
 };
-
-//vec3s screen_to_field( );

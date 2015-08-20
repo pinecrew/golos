@@ -1,8 +1,43 @@
 #include "draw.hpp"
 
-// vec3s screen_to_field( ) {
-    // TODO
-// }
+/*
+vec3d field_to_screen( vec3s sp, vec3s n, SDL_Point center ) {
+    // координаты ортов в плоскости экрана в декартовых координатах
+    vec3s ex = { 1, ( float ) ( M_PI / 2 ), n.phi + ( float ) ( M_PI / 2 ) };
+    vec3s ey = { 1, n.theta - ( float ) ( M_PI / 2 ), n.phi };
+
+    // немного скалярных произведений
+    return vec3d( center.x + ( int ) ( sp * ex ), center.y - ( int ) ( sp * ey ), 0 );
+}
+
+bool visible( vec3s n, vec3s sp ) {
+    return ( n * sp >= 0 ); // хак для увеличения области видимости
+}
+
+vec3s screen_to_field( SDL_Point p, vec3s n, SDL_Point c, vec3s camera ) {
+   float b1 = ( p.x - c.x ) / camera.r,
+         b2 = ( c.y - p.y ) / camera.r,
+         a1 = cos( n.theta ),
+         a2 = sin( n.theta );
+   float d = a1 * sqrt( 1 - b1 * b1 - b2 * b2 );
+   float ct1 = ( b2 * a2 + d ), ct2 = ( b2 * a2 - d );
+   float st1 = sqrt( 1 - ct1 * ct1 ), st2 = ( 1 - ct2 * ct2 );
+   float sdp1 = b1 / st1, sdp2 = b1 / st2;
+   float cdp1 = ( a2 * ct1 - b2 ) / a1 / st1, cdp2 = ( a2 * ct2 - b2 ) / a1 / st2;
+   float t1 = atan2f(st1, ct1),
+         t2 = atan2f(st1, ct1),
+         p1 = _fmod( n.phi + atan2f(sdp1, cdp1), 2 * M_PI)  ,
+         p2 = _fmod( n.phi + atan2f(sdp2, cdp2), 2 * M_PI );
+   vec3s s1 = { 1, t1, p1 };
+   vec3s s2 = { 1, t2, p2 };
+   vec3s s;
+   if ( visible(n, s1) )
+       s = s1;
+   else
+       s = s2;
+   return s;
+}
+*/
 
 void gLoadImage( const char * filename, GLuint & tex ) {
     SDL_Surface* Surface = IMG_Load( filename );

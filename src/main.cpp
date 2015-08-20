@@ -35,12 +35,27 @@ field* f;
 
 WindowManager window( "Game Of Life On fieldace" );
 const char output_str[] ="[%s] fps: %.2f; theta: %.2f; phi: %.2f; delay %d";
-const wchar_t * game_status[] = {
-    (const wchar_t *) "pause",
-    (const wchar_t *) "play"
+const char * game_status[] = {
+    (const char *) "pause",
+    (const char *) "play"
 };
 bool game_step = false;
 uint8_t MAX_COUNT = 5;
+
+template< typename T > inline T sqr( const T & i ) { return ( i ) * ( i ); } 
+
+void set_cell( int x, int y, bool create_flag ) {
+    SDL_Point center = { window.GetWidth() / 2, window.GetHeight() / 2 };
+    SDL_Point mouse = { x, y };
+    // if ( sqr( x - center.x ) + sqr( y - center.y ) < sqr( 1.0f ) ) {
+    //     vec3s point = screen_to_field( mouse, view_direction, center );
+    //     if ( create_flag ) {
+    //         f->create( point );
+    //     } else {
+    //         f->toggle( point );
+    //     }
+    // }
+}
 
 void generateShadowFBO() {
   int shadowMapWidth = window.GetWidth() * smRatio;
@@ -141,13 +156,6 @@ void golos_init( void ) {
     glMatrixMode( GL_MODELVIEW );
     glewInit();
 
-    // включаем отсечение лишнего
-    glEnable( GL_CULL_FACE );
-    // отрисовка против часовой стрелки
-    glFrontFace( GL_CCW );
-    // рисуем только переднюю нормаль
-    glCullFace( GL_BACK );
-
     glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
@@ -247,6 +255,9 @@ void golos_event( SDL_Event * event ) {
                 mouse_x = event->button.x;
                 mouse_y = event->button.y;
             }
+            if ( button_right_set ) {
+                set_cell( event->button.x, event->button.y, true );
+            }
             break;
         case SDL_MOUSEWHEEL:
                 camera.r -= event->wheel.y * camera.r / 60.0;
@@ -262,6 +273,9 @@ void golos_event( SDL_Event * event ) {
                     button_left_set = true;
                     break;
                 case SDL_BUTTON_RIGHT:
+                    if ( button_right_set ) {
+                        set_cell( event->button.x, event->button.y, true );
+                    }
                     button_right_set = true;
                     break;
                 default:
@@ -287,13 +301,12 @@ void golos_loop( void ) {
 }
 
 void golos_render( void ) {
-    vec3d rect_earth = vec3d(0, 0, 0);
     vec3d rect_sun = vec3d(sun_pos);
     vec3d rect_moon = vec3d(moon_pos);
     sun_pos.rotate(0, dphi / 3);
     moon_pos.rotate(0, 5 * dphi / 3);
 
-
+    glEnable( GL_CULL_FACE );
 	//First step: Render from the light POV to a FBO, story depth values only
     glBindFramebuffer(GL_FRAMEBUFFER,fboId);	//Rendering offscreen
 	// In the case we render the shadowmap to a higher resolution, the viewport must be modified accordingly.
@@ -304,9 +317,9 @@ void golos_render( void ) {
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     setupMatrices(sun_pos, {0,0,0});
     // Culling switching, rendering only backface, this is done to avoid self-shadowing
-    glCullFace(GL_FRONT);
+    glCullFace( GL_BACK );
     sphere.draw( 0.3f, rect_moon );
-    sphere.draw( 1.0f, rect_earth );
+    sphere.draw( 1.0f );
     //Save modelview/projection matrice into texture7, also add a biais
     setTextureMatrix();
     // Now rendering from the camera POV, using the FBO to generate shadows
@@ -374,11 +387,12 @@ void golos_render( void ) {
     earthShader->run();
     // рисуем Землю
     earthShader->uniform1i("shadowMap", 7);
-    sphere.draw( 1.0f, rect_earth );
+    sphere.draw( 1.0f );
     earthShader->stop();
 
     // для нормального отображения текста
     glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE );
+    glDisable( GL_CULL_FACE );
     glPushMatrix();
     glLoadIdentity();
     glColor3f( 1.0f, 1.0f, 1.0f );
