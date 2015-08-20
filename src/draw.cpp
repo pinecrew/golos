@@ -86,17 +86,21 @@ gSphere::gSphere( std::size_t UResolution, std::size_t VResolution ) {
 
 void gSphere::draw( float radius, const vec3d & pos ) {
     glPushMatrix();
-    if ( radius != 1.0f ) {
-        glScalef( radius, radius, radius );
-    }
     if ( pos.x != 0.0f && pos.y != 0.0f && pos.z != 0.0f ) {
         glTranslatef( pos.x, pos.y, pos.z );
     }
+    std::size_t copy_count = max_count * coords_count * vertex_count;
+    auto tmp = new float [ copy_count ];
+    // осторожно, хак, иначе тени неправильно считаются
+    for (std::size_t i = 0; i < copy_count; ++i) {
+        tmp[i] = radius * vertex[i];
+    }
     glEnableClientState( GL_VERTEX_ARRAY );
-    glVertexPointer( 3, GL_FLOAT, 0, vertex );
+    glVertexPointer( 3, GL_FLOAT, 0, tmp );
     glDrawArrays( GL_TRIANGLE_STRIP, 0, max_count );
     glDisableClientState( GL_VERTEX_ARRAY );
     glPopMatrix();
+    delete[] tmp;
 }
 
 gSphere::~gSphere() {

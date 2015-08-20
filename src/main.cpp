@@ -8,10 +8,11 @@
 #include "window.hpp"
 #include "shader.hpp"
 #include "font.hpp"
+#include "shadow_map_fbo.hpp"
 
-vec3s camera = {10, M_PI/4, 0}; // положение камеры в сферических координатах
+vec3s camera = {10, M_PI/4, M_PI/2}; // положение камеры в сферических координатах
 vec3s sun_pos = {30, M_PI/2, M_PI/2};
-vec3s moon_pos = {9, M_PI/2, M_PI/2};
+vec3s moon_pos = {6, M_PI/2, M_PI/3};
 
 float smRatio = 2.0;
 float dtheta = 0.01;
@@ -20,10 +21,9 @@ float dphi = 0.01;
 GLuint moonTextureId;
 GLuint moonNormalsId;
 GLuint earthTextureId;
-GLuint fboId;
-GLuint depthTextureId;
 
 ShaderProgram *sunShader, *earthShader, *moonShader;
+ShadowMapFBO m_shadowMapFBO;
 
 gSphere sphere( 30, 60 );
 gFont font;
@@ -42,7 +42,7 @@ const char * game_status[] = {
 bool game_step = false;
 uint8_t MAX_COUNT = 5;
 
-template< typename T > inline T sqr( const T & i ) { return ( i ) * ( i ); } 
+template< typename T > inline T sqr( const T & i ) { return ( i ) * ( i ); }
 
 void set_cell( int x, int y, bool create_flag ) {
     SDL_Point center = { window.GetWidth() / 2, window.GetHeight() / 2 };
@@ -56,53 +56,33 @@ void set_cell( int x, int y, bool create_flag ) {
     //     }
     // }
 }
+void startTranslate(vec3d v)
+{
+    glPushMatrix();
+    glTranslatef(v.x,v.y,v.z);
 
-void generateShadowFBO() {
-  int shadowMapWidth = window.GetWidth() * smRatio;
-  int shadowMapHeight = window.GetHeight() * smRatio;
-
-  GLenum FBOstatus;
-
-  // Try to use a texture depth component
-  glGenTextures(1, &depthTextureId);
-  glBindTexture(GL_TEXTURE_2D, depthTextureId);
-
-  // GL_LINEAR does not make sense for depth texture. However, next tutorial shows usage of GL_LINEAR and PCF
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-  // Remove artifact on the edges of the shadowmap
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
-
-  // No need to force GL_DEPTH_COMPONENT24, drivers usually give you the max precision if available
-  glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowMapWidth, shadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  // create a framebuffer object
-  glGenFramebuffers(1, &fboId);
-  glBindFramebuffer(GL_FRAMEBUFFER, fboId);
-
-  // Instruct openGL that we won't bind a color texture with the currently bound FBO
-  glDrawBuffer(GL_NONE);
-  glReadBuffer(GL_NONE);
-
-  // attach the texture to FBO depth attachment point
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D, depthTextureId, 0);
-
-  // check FBO status
-  FBOstatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-  if(FBOstatus != GL_FRAMEBUFFER_COMPLETE)
-      printf("GL_FRAMEBUFFER_COMPLETE failed, CANNOT use FBO\n");
-
-  // switch back to window-system-provided framebuffer
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glMatrixMode(GL_TEXTURE);
+    glActiveTexture(GL_TEXTURE7);
+    glPushMatrix();
+    glTranslatef(v.x,v.y,v.z);
 }
 
-void setTextureMatrix(void) {
+void endTranslate()
+{
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+}
+
+void setTextureMatrix(void)
+{
     static double modelView[16];
     static double projection[16];
 
+    // This is matrix transform every coordinate x,y,z
+    // x = x* 0.5 + 0.5
+    // y = y* 0.5 + 0.5
+    // z = z* 0.5 + 0.5
     // Moving from unit cube [-1,1] to [0,1]
     const GLdouble bias[16] = {
         0.5, 0.0, 0.0, 0.0,
@@ -116,12 +96,12 @@ void setTextureMatrix(void) {
 
 
     glMatrixMode(GL_TEXTURE);
-    glActiveTextureARB(GL_TEXTURE7);
+    glActiveTexture(GL_TEXTURE7);
 
     glLoadIdentity();
     glLoadMatrixd(bias);
 
-    // concatating all matrices into one.
+    // concatating all matrice into one.
     glMultMatrixd (projection);
     glMultMatrixd (modelView);
 
@@ -129,16 +109,24 @@ void setTextureMatrix(void) {
     glMatrixMode(GL_MODELVIEW);
 }
 
-void setupMatrices(vec3s position, vec3s lookAt) {
+
+
+void setView(vec3s position, vec3s lookAt) {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-    gluPerspective( 60.0f, (float) window.GetWidth() / (float) window.GetHeight(), 0.1f, 100.0f );
+    gluPerspective( 45.0f, (float) window.GetWidth() / (float) window.GetHeight(), 0.1f, 100.0f );
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
     auto rPos = vec3d(position);
     auto rLook = vec3d(lookAt);
     float up = (camera.theta < 0) ? -1.0 : 1.0; // фикс для gluLookAt
 	gluLookAt(rPos.x,rPos.y,rPos.z,rLook.x,rLook.y,rLook.z,0,0,up);
+}
+
+void random_fill( void ) {
+    for ( std::size_t i = 0; i < ( f->width * f->height ) / 3; i++ ) {
+        (*f)[rand()%f->height][rand()%f->width] = true;
+    }
 }
 
 
@@ -150,11 +138,8 @@ void golos_init( void ) {
     glDepthFunc( GL_LESS );
     glEnable( GL_DEPTH_TEST );
     glShadeModel( GL_SMOOTH );
-    glMatrixMode( GL_PROJECTION );
-    glLoadIdentity();
-    gluPerspective( 60.0f, (float) window.GetWidth() / (float) window.GetHeight(), 0.1f, 100.0f );
-    glMatrixMode( GL_MODELVIEW );
     glewInit();
+    m_shadowMapFBO.Init(window.GetWidth(), window.GetHeight());
 
     glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_LIGHTING);
@@ -176,9 +161,7 @@ void golos_init( void ) {
 
     f = new field( rows, cols );
     // рандомная инициализация
-    for ( int i = 0; i < rows; ++i )
-        for ( int j = 0; j < cols; ++j )
-            (*f)[i][j] = rand() % 2;
+    random_fill();
     cells = new GLubyte[rows * cols];
 
     font.load( "./data/FiraSans-Medium.ttf", 16 );
@@ -187,13 +170,22 @@ void golos_init( void ) {
     gLoadImage( "./data/moon_normalmap.jpg", moonNormalsId );
     glGenTextures(1, &earthTextureId);
 
-    generateShadowFBO();
-}
+    glEnable( GL_TEXTURE_2D );
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture( GL_TEXTURE_2D, moonTextureId );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
-void random_fill( void ) {
-    for ( std::size_t i = 0; i < ( f->width * f->height ) / 3; i++ ) {
-        (*f)[rand()%f->height][rand()%f->width] = true;
-    }
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture( GL_TEXTURE_2D, moonNormalsId );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture( GL_TEXTURE_2D, earthTextureId );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
 }
 
 void golos_event( SDL_Event * event ) {
@@ -290,6 +282,23 @@ void golos_event( SDL_Event * event ) {
     }
 }
 
+void update() {
+    sun_pos.rotate(0, dphi / 3);
+    moon_pos.rotate(0, 3 * dphi);
+
+    vec3d rect_sun = vec3d(sun_pos);
+    float light_position[4] = {rect_sun.x, rect_sun.y, rect_sun.z, 1};
+
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+    // формируем текстуру
+    for ( int i = 0; i < rows; ++i )
+        for ( int j = 0; j < cols; ++j )
+            cells[i * cols + j] = ( (*f)[i][j] ) ? 0xff : 0x00;
+
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RED , GL_UNSIGNED_BYTE, cells );
+};
+
 void golos_loop( void ) {
     static int counter = 0;
     if ( game_step && counter >= MAX_COUNT ) {
@@ -300,106 +309,68 @@ void golos_loop( void ) {
     }
 }
 
+
 void golos_render( void ) {
+
+    update();
+
     vec3d rect_sun = vec3d(sun_pos);
     vec3d rect_moon = vec3d(moon_pos);
-    sun_pos.rotate(0, dphi / 3);
-    moon_pos.rotate(0, 5 * dphi / 3);
 
-    glEnable( GL_CULL_FACE );
-	//First step: Render from the light POV to a FBO, story depth values only
-    glBindFramebuffer(GL_FRAMEBUFFER,fboId);	//Rendering offscreen
-	// In the case we render the shadowmap to a higher resolution, the viewport must be modified accordingly.
-    glViewport(0,0, window.GetWidth() * smRatio, window.GetHeight() * smRatio);
-    // Clear previous frame values
-    glClear( GL_DEPTH_BUFFER_BIT);
-    //Disable color rendering, we only want to write to the Z-Buffer
-    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-    // dirty hack :)
-    setupMatrices( { 0, 0, 0 }, moon_pos );
-    // Culling switching, rendering only backface, this is done to avoid self-shadowing
-    glCullFace( GL_FRONT );
-    sphere.draw( 0.3f, rect_moon );
-    sphere.draw( 1.0f );
-    //Save modelview/projection matrice into texture7, also add a biais
+    // Рендер во фреймбуффер карты теней
+
+    m_shadowMapFBO.BindForWriting();
+
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    setView(sun_pos, {0, 0, 0});
+
+    glCullFace(GL_FRONT);
+    // солнце не рисуем по понятным причинам
+    startTranslate(rect_moon);
+    sphere.draw( 0.3f ); // луна
+    endTranslate();
+    startTranslate({0,0,0});
+    sphere.draw( 1.0f );            // земля
+    endTranslate();
+
+    // тут нужно получить MVP матрицу
     setTextureMatrix();
-    // Now rendering from the camera POV, using the FBO to generate shadows
-    glBindFramebuffer(GL_FRAMEBUFFER,0);
-    glViewport(0,0,window.GetWidth(), window.GetHeight());
+    // Рендер сцены
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    //Enabling color write (previously disabled for light POV z-buffer rendering)
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    m_shadowMapFBO.BindForReading(GL_TEXTURE7);
 
-    // Clear previous frame values
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glCullFace( GL_BACK );
-    setupMatrices(camera, {0, 0, 0});
+    setView(camera, {0, 0, 0});
 
-	glActiveTexture(GL_TEXTURE7);
-	glBindTexture(GL_TEXTURE_2D, depthTextureId);
-
-    //// нужно выключать использование текстур для обычной отрисовки
-    // glDisable( GL_TEXTURE_2D );
-
-    float light_position[4] = {rect_sun.x, rect_sun.y, rect_sun.z, 1};
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    // рисуем солнышко (потом добавлю шейдер)
+    glActiveTexture(GL_TEXTURE0);
+    glCullFace(GL_BACK);
     sunShader->run();
     sphere.draw( 2.0f, rect_sun );
     sunShader->stop();
 
-    // рисуем венеру
-    glEnable( GL_TEXTURE_2D );
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture( GL_TEXTURE_2D, moonTextureId );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture( GL_TEXTURE_2D, moonNormalsId );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-
-
-
     moonShader->run();
-    moonShader->uniform1i("surface", 0);
-    moonShader->uniform1i("normals", 1);
+    moonShader->uniform1i("surface", 1);
+    moonShader->uniform1i("normals", 2);
     moonShader->uniform1i("shadowMap", 7);
     sphere.draw( 0.3f, rect_moon );
     moonShader->stop();
 
-    // формируем текстуру
-
-    for ( int i = 0; i < rows; ++i )
-        for ( int j = 0; j < cols; ++j )
-            cells[i * cols + j] = ( (*f)[i][j] ) ? 0xff : 0x00;
-
-    // отдаём текстуру
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture( GL_TEXTURE_2D, earthTextureId );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RED , GL_UNSIGNED_BYTE, cells );
-    glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
-
-    // врубаем шейдеры
     earthShader->run();
-    // рисуем Землю
     earthShader->uniform1i("shadowMap", 7);
     sphere.draw( 1.0f );
     earthShader->stop();
 
     // для нормального отображения текста
     glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE );
-    glDisable( GL_CULL_FACE );
     glPushMatrix();
     glLoadIdentity();
     glColor3f( 1.0f, 1.0f, 1.0f );
     font.draw( 10, 10, output_str, game_status[int(game_step)], window.GetFPS(),
         camera.theta, camera.phi, MAX_COUNT );
     glPopMatrix();
+    // у меня вместо некоторых символов рисуется TEXTURE0
 
     golos_loop();
 

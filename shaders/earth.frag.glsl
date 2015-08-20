@@ -25,7 +25,7 @@ void main(void) {
 
     vec4 shadowCoordinateWdivide = shadowCoord / shadowCoord.w ;
     // Used to lower moiré pattern and self-shadowing
-    shadowCoordinateWdivide.z += 0.0005;
+    shadowCoordinateWdivide.z -= 0.0001;
     float distanceFromLight = texture2D(shadowMap,shadowCoordinateWdivide.st).z;
     if (shadowCoord.w > 0.0 && distanceFromLight < shadowCoordinateWdivide.z)
         intensity = ambient;
