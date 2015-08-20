@@ -317,7 +317,7 @@ void golos_render( void ) {
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     setupMatrices(sun_pos, {0,0,0});
     // Culling switching, rendering only backface, this is done to avoid self-shadowing
-    glCullFace( GL_BACK );
+    glCullFace( GL_FRONT );
     sphere.draw( 0.3f, rect_moon );
     sphere.draw( 1.0f );
     //Save modelview/projection matrice into texture7, also add a biais
@@ -331,7 +331,7 @@ void golos_render( void ) {
 
     // Clear previous frame values
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+    glCullFace( GL_BACK );
     setupMatrices(camera, {0, 0, 0});
 
 	glActiveTexture(GL_TEXTURE7);
