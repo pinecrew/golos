@@ -69,3 +69,6 @@ void ShaderProgram::uniform2f(const char* varName, glm::vec2 value) {
 }
 
 
+void ShaderProgram::uniformMatrix4fv(const char* varName, glm::mat4 value) {
+    glUniformMatrix4fv(glGetUniformLocation(program, varName), 1, GL_FALSE, glm::value_ptr(value));
+}

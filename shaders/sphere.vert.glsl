@@ -1,14 +1,17 @@
-varying vec3 light;
+uniform mat4 lightMVP;
+
+varying vec3 lightDir;
 varying vec3 normal;
-varying vec3 texCoords;
-varying vec4 shadowCoord;
+varying vec3 texCoord;
+varying vec3 smCoord;
 
 void main(void) {
     vec4 v = gl_ModelViewMatrix * gl_Vertex;
-    light = normalize( vec3( gl_LightSource[0].position - v ));
+    lightDir = normalize( vec3( gl_LightSource[0].position - v ));
     normal = normalize( gl_NormalMatrix * vec3( gl_Vertex ));
 
     gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-    texCoords = normalize( vec3( gl_Vertex ));
-    shadowCoord = gl_TextureMatrix[7] * gl_Vertex;
+    texCoord = normalize( vec3( gl_Vertex ));
+    vec4 smCoord4 = lightMVP * gl_Vertex;
+    smCoord = 0.5 * smCoord4.xyz / smCoord4.w + vec3(0.5, 0.5, 0.5);
 }

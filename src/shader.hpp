@@ -1,6 +1,7 @@
 #pragma once
 #include <GL/glew.h>
-#include <glm/vec2.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "error.hpp"
 
 class ShaderProgram {
@@ -12,6 +13,7 @@ class ShaderProgram {
 
         void uniform1i(const char* varName, int value);
         void uniform2f(const char* varName, glm::vec2 value);
+        void uniformMatrix4fv(const char* varName, glm::mat4 value);
 
         void run();
         void stop();

@@ -2,6 +2,8 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <iostream>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "draw.hpp"
 #include "math.hpp"
 #include "vectors.hpp"
@@ -56,71 +58,26 @@ void set_cell( int x, int y, bool create_flag ) {
     //     }
     // }
 }
-void startTranslate(vec3d v)
-{
-    glPushMatrix();
-    glTranslatef(v.x,v.y,v.z);
 
-    glMatrixMode(GL_TEXTURE);
-    glActiveTexture(GL_TEXTURE7);
-    glPushMatrix();
-    glTranslatef(v.x,v.y,v.z);
-}
-
-void endTranslate()
-{
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-}
-
-void setTextureMatrix(void)
-{
-    static double modelView[16];
-    static double projection[16];
-
-    // This is matrix transform every coordinate x,y,z
-    // x = x* 0.5 + 0.5
-    // y = y* 0.5 + 0.5
-    // z = z* 0.5 + 0.5
-    // Moving from unit cube [-1,1] to [0,1]
-    const GLdouble bias[16] = {
-        0.5, 0.0, 0.0, 0.0,
-        0.0, 0.5, 0.0, 0.0,
-        0.0, 0.0, 0.5, 0.0,
-    0.5, 0.5, 0.5, 1.0};
-
-    // Grab modelview and transformation matrices
-    glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
-    glGetDoublev(GL_PROJECTION_MATRIX, projection);
-
-
-    glMatrixMode(GL_TEXTURE);
-    glActiveTexture(GL_TEXTURE7);
-
+glm::mat4 setProjection ( float fieldOfView, float nearCut, float farCut ) {
+    glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glLoadMatrixd(bias);
-
-    // concatating all matrice into one.
-    glMultMatrixd (projection);
-    glMultMatrixd (modelView);
-
-    // Go back to normal matrix mode
+    gluPerspective( fieldOfView, (float) window.GetWidth() / (float) window.GetHeight(), nearCut, farCut );
     glMatrixMode(GL_MODELVIEW);
+    return glm::perspective( fieldOfView, (float) window.GetWidth() / (float) window.GetHeight(), nearCut, farCut );
 }
 
 
-
-void setView(vec3s position, vec3s lookAt) {
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-    gluPerspective( 45.0f, (float) window.GetWidth() / (float) window.GetHeight(), 0.1f, 100.0f );
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+glm::mat4 setView(vec3s position, vec3s lookAt) {
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
     auto rPos = vec3d(position);
     auto rLook = vec3d(lookAt);
     float up = (camera.theta < 0) ? -1.0 : 1.0; // фикс для gluLookAt
-	gluLookAt(rPos.x,rPos.y,rPos.z,rLook.x,rLook.y,rLook.z,0,0,up);
+    gluLookAt(rPos.x,rPos.y,rPos.z,rLook.x,rLook.y,rLook.z,0,0,up);
+    return glm::lookAt( glm::vec3(rPos.x,rPos.y,rPos.z),
+                glm::vec3(rLook.x,rLook.y,rLook.z),
+                glm::vec3(0,0,up) );
 }
 
 void random_fill( void ) {
@@ -128,8 +85,6 @@ void random_fill( void ) {
         (*f)[rand()%f->height][rand()%f->width] = true;
     }
 }
-
-
 
 void golos_init( void ) {
     // init OpenGL params
@@ -213,10 +168,10 @@ void golos_event( SDL_Event * event ) {
                     camera.rotate(-dtheta, 0);
                     break;
                 case SDLK_RIGHT:
-                    camera.rotate(0, dphi);
+                    moon_pos.rotate(0, dphi);
                     break;
                 case SDLK_LEFT:
-                    camera.rotate(0, -dphi);
+                    moon_pos.rotate(0, -dphi);
                     break;
                 case SDLK_PERIOD:
                     if ( MAX_COUNT > 0 ) {
@@ -283,8 +238,8 @@ void golos_event( SDL_Event * event ) {
 }
 
 void update() {
-    sun_pos.rotate(0, dphi / 3);
-    moon_pos.rotate(0, 3 * dphi);
+    //sun_pos.rotate(0, dphi / 3);
+    //moon_pos.rotate(0, dphi);
 
     vec3d rect_sun = vec3d(sun_pos);
     float light_position[4] = {rect_sun.x, rect_sun.y, rect_sun.z, 1};
@@ -323,26 +278,24 @@ void golos_render( void ) {
 
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    setView(sun_pos, {0, 0, 0});
+    auto lightView = setView(sun_pos, {0, 0, 0});
+    auto lightProj = setProjection(60.0f, 1.0f, 100.0f);
+    auto lightVP = lightProj * lightView;
 
     glCullFace(GL_FRONT);
-    // солнце не рисуем по понятным причинам
-    startTranslate(rect_moon);
-    sphere.draw( 0.3f ); // луна
-    endTranslate();
-    startTranslate({0,0,0});
-    sphere.draw( 1.0f );            // земля
-    endTranslate();
 
-    // тут нужно получить MVP матрицу
-    setTextureMatrix();
+    // солнце не рисуем по понятным причинам
+    sphere.draw( 0.3f, rect_moon ); // луна
+    sphere.draw( 1.0f );            // земля
+
     // Рендер сцены
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    m_shadowMapFBO.BindForReading(GL_TEXTURE7);
+    m_shadowMapFBO.BindForReading(GL_TEXTURE3);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     setView(camera, {0, 0, 0});
+    setProjection(60.0f, 1.0f, 100.0f);
 
     glActiveTexture(GL_TEXTURE0);
     glCullFace(GL_BACK);
@@ -350,15 +303,18 @@ void golos_render( void ) {
     sphere.draw( 2.0f, rect_sun );
     sunShader->stop();
 
+    auto moonModel = glm::translate(glm::mat4(1.0), glm::vec3(rect_moon.x, rect_moon.y, rect_moon.z));
     moonShader->run();
-    moonShader->uniform1i("surface", 1);
-    moonShader->uniform1i("normals", 2);
-    moonShader->uniform1i("shadowMap", 7);
+    moonShader->uniformMatrix4fv("lightMVP", lightVP * moonModel );
+    moonShader->uniform1i("surfaceMap", 1);
+    moonShader->uniform1i("normalMap", 2);
+    moonShader->uniform1i("shadowMap", 3);
     sphere.draw( 0.3f, rect_moon );
     moonShader->stop();
 
     earthShader->run();
-    earthShader->uniform1i("shadowMap", 7);
+    earthShader->uniformMatrix4fv("lightMVP", lightVP );
+    earthShader->uniform1i("shadowMap", 3);
     sphere.draw( 1.0f );
     earthShader->stop();
 
