@@ -47,8 +47,9 @@ uint8_t MAX_COUNT = 5;
 template< typename T > inline T sqr( const T & i ) { return ( i ) * ( i ); }
 
 void set_cell( int x, int y, bool create_flag ) {
-    SDL_Point center = { window.GetWidth() / 2, window.GetHeight() / 2 };
-    SDL_Point mouse = { x, y };
+    // todo: написать рабочий код установки ячейки на сфере
+    // SDL_Point center = { window.GetWidth() / 2, window.GetHeight() / 2 };
+    // SDL_Point mouse = { x, y };
     // if ( sqr( x - center.x ) + sqr( y - center.y ) < sqr( 1.0f ) ) {
     //     vec3s point = screen_to_field( mouse, view_direction, center );
     //     if ( create_flag ) {
@@ -256,6 +257,8 @@ void update() {
 
 void golos_loop( void ) {
     static int counter = 0;
+    // блок управления автоматической генерации нового поколения
+    // со скоростью MAX_COUNT
     if ( game_step && counter >= MAX_COUNT ) {
         f->nextGeneration();
         counter = 0;
@@ -318,15 +321,12 @@ void golos_render( void ) {
     sphere.draw( 1.0f );
     earthShader->stop();
 
-    // для нормального отображения текста
-    glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE );
     glPushMatrix();
     glLoadIdentity();
     glColor3f( 1.0f, 1.0f, 1.0f );
     font.draw( 10, 10, output_str, game_status[int(game_step)], window.GetFPS(),
         camera.theta, camera.phi, MAX_COUNT );
     glPopMatrix();
-    // у меня вместо некоторых символов рисуется TEXTURE0
 
     golos_loop();
 
