@@ -9,7 +9,7 @@
 
 // vec3d field_to_screen( vec3s sp, vec3s n, SDL_Point center );
 // vec3s screen_to_field( SDL_Point p, vec3s n, SDL_Point c, vec3s camera );
-void gLoadImage( const char * filename, GLuint & tex );
+void gLoadImage( const char * filename, GLuint & texture );
 
 class gSphere {
 public:
