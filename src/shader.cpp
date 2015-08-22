@@ -2,74 +2,65 @@
 #include <fstream>
 #include "shader.hpp"
 
-ShaderProgram::ShaderProgram() {
-    program = glCreateProgram();
-}
+ShaderProgram::ShaderProgram() { program = glCreateProgram(); }
 
-ShaderProgram::~ShaderProgram() {
-    glDeleteProgram(program);
-}
+ShaderProgram::~ShaderProgram() { glDeleteProgram( program ); }
 
-char* readFile(const char* fileName) {
-    std::ifstream is(fileName, std::ios::in|std::ios::binary|std::ios::ate);
-	if (!is.is_open()) {
+char * readFile( const char * fileName ) {
+    std::ifstream is( fileName,
+                      std::ios::in | std::ios::binary | std::ios::ate );
+    if ( !is.is_open() ) {
         std::string tmp = "Unable to open file ";
         tmp += fileName;
         Panic( tmp.c_str() );
-	}
+    }
 
-	long size = is.tellg();
+    long size = is.tellg();
 
-    auto buffer = new char[size+1];
-	is.seekg(0, std::ios::beg);
-	is.read (buffer, size);
-	is.close();
-	buffer[size] = 0;
+    auto buffer = new char[ size + 1 ];
+    is.seekg( 0, std::ios::beg );
+    is.read( buffer, size );
+    is.close();
+    buffer[ size ] = 0;
     return buffer;
 }
 
-GLuint ShaderProgram::compileShader(const char* fileName, GLenum shaderType) {
+GLuint ShaderProgram::compileShader( const char * fileName,
+                                     GLenum shaderType ) {
     GLuint handler;
 
     // get a shader handler
-    handler = glCreateShader(shaderType);
+    handler = glCreateShader( shaderType );
     // read the shader source from a file
     // conversions to fit the next function
-    const char* buffer = readFile(fileName);
+    const char * buffer = readFile( fileName );
     // pass the source text to GL
-    glShaderSource(handler, 1, &buffer, 0);
+    glShaderSource( handler, 1, &buffer, 0 );
     // finally compile the shader
-    glCompileShader(handler);
+    glCompileShader( handler );
     return handler;
 }
 
-void ShaderProgram::addShader(const char* fileName, GLenum shaderType) {
-    auto shader = compileShader(fileName, shaderType);
-    glAttachShader(program, shader);
+void ShaderProgram::addShader( const char * fileName, GLenum shaderType ) {
+    auto shader = compileShader( fileName, shaderType );
+    glAttachShader( program, shader );
 };
 
-void ShaderProgram::link() {
-    glLinkProgram(program);
+void ShaderProgram::link() { glLinkProgram( program ); }
+
+void ShaderProgram::run() { glUseProgram( program ); }
+
+void ShaderProgram::stop() { glUseProgram( 0 ); }
+
+void ShaderProgram::uniform1i( const char * varName, int value ) {
+    glUniform1i( glGetUniformLocation( program, varName ), value );
 }
 
-void ShaderProgram::run() {
-    glUseProgram(program);
+void ShaderProgram::uniform2f( const char * varName, glm::vec2 value ) {
+    glUniform2f( glGetUniformLocation( program, varName ), value.x, value.y );
 }
 
-void ShaderProgram::stop() {
-    glUseProgram(0);
-}
-
-void ShaderProgram::uniform1i(const char* varName, int value) {
-    glUniform1i(glGetUniformLocation(program, varName), value);
-}
-
-void ShaderProgram::uniform2f(const char* varName, glm::vec2 value) {
-    glUniform2f(glGetUniformLocation(program, varName), value.x, value.y);
-}
-
-
-void ShaderProgram::uniformMatrix4fv(const char* varName, glm::mat4 value) {
-    GLint location = glGetUniformLocation(program, varName);
-    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+void ShaderProgram::uniformMatrix4fv( const char * varName, glm::mat4 value ) {
+    GLint location = glGetUniformLocation( program, varName );
+    glUniformMatrix4fv( location, 1, GL_FALSE, glm::value_ptr( value ) );
 }

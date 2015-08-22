@@ -7,7 +7,8 @@ vec3d field_to_screen( vec3s sp, vec3s n, SDL_Point center ) {
     vec3s ey = { 1, n.theta - ( float ) ( M_PI / 2 ), n.phi };
 
     // немного скалярных произведений
-    return vec3d( center.x + ( int ) ( sp * ex ), center.y - ( int ) ( sp * ey ), 0 );
+    return vec3d( center.x + ( int ) ( sp * ex ), center.y - ( int ) ( sp * ey
+), 0 );
 }
 
 bool visible( vec3s n, vec3s sp ) {
@@ -23,7 +24,8 @@ vec3s screen_to_field( SDL_Point p, vec3s n, SDL_Point c, vec3s camera ) {
    float ct1 = ( b2 * a2 + d ), ct2 = ( b2 * a2 - d );
    float st1 = sqrt( 1 - ct1 * ct1 ), st2 = ( 1 - ct2 * ct2 );
    float sdp1 = b1 / st1, sdp2 = b1 / st2;
-   float cdp1 = ( a2 * ct1 - b2 ) / a1 / st1, cdp2 = ( a2 * ct2 - b2 ) / a1 / st2;
+   float cdp1 = ( a2 * ct1 - b2 ) / a1 / st1, cdp2 = ( a2 * ct2 - b2 ) / a1 /
+st2;
    float t1 = atan2f(st1, ct1),
          t2 = atan2f(st1, ct1),
          p1 = _fmod( n.phi + atan2f(sdp1, cdp1), 2 * M_PI)  ,
@@ -53,7 +55,8 @@ void gLoadImage( const char * filename, GLuint & texture ) {
     if ( Surface->format->BytesPerPixel == 4 ) {
         Mode = GL_RGBA;
     }
-    glTexImage2D( GL_TEXTURE_2D, 0, Mode, Surface->w, Surface->h, 0, Mode, GL_UNSIGNED_BYTE, Surface->pixels );
+    glTexImage2D( GL_TEXTURE_2D, 0, Mode, Surface->w, Surface->h, 0, Mode,
+                  GL_UNSIGNED_BYTE, Surface->pixels );
     SDL_FreeSurface( Surface );
 }
 
@@ -65,7 +68,7 @@ void gLoadImage( const char * filename, GLuint & texture ) {
 gSphere::gSphere( const gSphere & sphere ) {
     max_count = sphere.max_count;
     size_t copy_count = max_count * coords_count * vertex_count;
-    vertex = new float [ copy_count ];
+    vertex = new float[ copy_count ];
     std::memcpy( (void *) vertex, (void *) sphere.vertex, copy_count );
 }
 
@@ -92,7 +95,7 @@ gSphere::gSphere( std::size_t UResolution, std::size_t VResolution ) {
     const float stepV = ( endV - startV ) / (float) VResolution;
     // количество необходимых вершин
     max_count = UResolution * VResolution * vertex_count;
-    vertex = new float [ max_count * coords_count ];
+    vertex = new float[ max_count * coords_count ];
     std::size_t count = 0;
     for ( std::size_t i = 0; i < UResolution; i++ ) {
         for ( std::size_t j = 0; j < VResolution; j++ ) {
@@ -112,7 +115,7 @@ gSphere::gSphere( std::size_t UResolution, std::size_t VResolution ) {
             insert_vec3d( count + 3, vec3d( radius, un, vn, true ) );
             insert_vec3d( count + 6, vec3d( radius, u, v, true ) );
             insert_vec3d( count + 9, vec3d( radius, u, vn, true ) );
-            // и увеличиваем вершинный счётчик 
+            // и увеличиваем вершинный счётчик
             count += vertex_count * coords_count;
         }
     }
@@ -126,7 +129,7 @@ gSphere::gSphere( std::size_t UResolution, std::size_t VResolution ) {
 //     нет
 void gSphere::draw( float radius, const vec3d & position ) {
     // !!! В случае нормальной работы теней      !!!
-    // !!! протестировать код под комментариями  !!! 
+    // !!! протестировать код под комментариями  !!!
     glPushMatrix();
     // если position не задан, то не передвигаем сферу
     if ( position.x != 0.0f && position.y != 0.0f && position.z != 0.0f ) {
@@ -137,10 +140,10 @@ void gSphere::draw( float radius, const vec3d & position ) {
     //     glScalef( radius, radius, radius );
     // }
     std::size_t copy_count = max_count * coords_count * vertex_count;
-    auto tmp = new float [ copy_count ];
+    auto tmp = new float[ copy_count ];
     // осторожно, хак, иначе тени неправильно считаются
-    for (std::size_t i = 0; i < copy_count; ++i) {
-        tmp[i] = radius * vertex[i];
+    for ( std::size_t i = 0; i < copy_count; ++i ) {
+        tmp[ i ] = radius * vertex[ i ];
     }
     glEnableClientState( GL_VERTEX_ARRAY );
     glVertexPointer( 3, GL_FLOAT, 0, tmp );
@@ -154,9 +157,7 @@ void gSphere::draw( float radius, const vec3d & position ) {
 // функция деструктор
 // входные параметры: нет
 // выходные параметры: нет
-gSphere::~gSphere() {
-    delete[] vertex;
-}
+gSphere::~gSphere() { delete[] vertex; }
 
 // функция добавления вершин в массив
 // входные параметры:
@@ -165,7 +166,7 @@ gSphere::~gSphere() {
 // выходные параметры:
 //     нет
 void gSphere::insert_vec3d( std::size_t index, vec3d coord ) {
-    vertex[index+0] = coord.x;
-    vertex[index+1] = coord.y;
-    vertex[index+2] = coord.z;
+    vertex[ index + 0 ] = coord.x;
+    vertex[ index + 1 ] = coord.y;
+    vertex[ index + 2 ] = coord.z;
 }

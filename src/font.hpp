@@ -10,11 +10,12 @@
 #include "error.hpp"
 
 class gFont {
-public:
+  public:
     void load( std::string ttf_file, uint16_t height );
     void draw( float x, float y, const char * fmt, ... );
     ~gFont();
-private:
+
+  private:
     const uint16_t FONT_LIST_SIZE = 128;
     void make_dlist( uint16_t ch );
     TTF_Font * font = nullptr;

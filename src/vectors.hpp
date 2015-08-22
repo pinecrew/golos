@@ -6,8 +6,8 @@ struct vec3s {
     float r, theta, phi;
     float operator*( const vec3s & v );
     void rotate( float dtheta, float dphi );
-    friend vec3s & operator += ( vec3s & lhs, const vec3s & rhs );
-    friend vec3s & operator -= ( vec3s & lhs, const vec3s & rhs );
+    friend vec3s & operator+=( vec3s & lhs, const vec3s & rhs );
+    friend vec3s & operator-=( vec3s & lhs, const vec3s & rhs );
 };
 
 struct vec3d {

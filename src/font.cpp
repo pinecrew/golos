@@ -2,7 +2,7 @@
 
 static inline int next_p2( int a ) {
     int rval = 1;
-    
+
     while ( rval < a ) {
         rval <<= 1;
     }
@@ -10,19 +10,20 @@ static inline int next_p2( int a ) {
 }
 
 inline void push_opengl_params() {
-    GLint viewport[4];
+    GLint viewport[ 4 ];
     glPushAttrib( GL_TRANSFORM_BIT );
     glGetIntegerv( GL_VIEWPORT, viewport );
     glMatrixMode( GL_PROJECTION );
     glPushMatrix();
     glLoadIdentity();
-    gluOrtho2D( viewport[0], viewport[2], viewport[1], viewport[3] );
+    gluOrtho2D( viewport[ 0 ], viewport[ 2 ], viewport[ 1 ], viewport[ 3 ] );
     glPopAttrib();
-    glPushAttrib( GL_LIST_BIT | GL_CURRENT_BIT | GL_ENABLE_BIT | GL_TRANSFORM_BIT | GL_TEXTURE_BIT );
+    glPushAttrib( GL_LIST_BIT | GL_CURRENT_BIT | GL_ENABLE_BIT |
+                  GL_TRANSFORM_BIT | GL_TEXTURE_BIT );
     glMatrixMode( GL_MODELVIEW );
-    glDisable( GL_LIGHTING ); 
+    glDisable( GL_LIGHTING );
     glEnable( GL_TEXTURE_2D );
-    glDisable( GL_DEPTH_TEST ); 
+    glDisable( GL_DEPTH_TEST );
     glEnable( GL_BLEND );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 }
@@ -36,30 +37,35 @@ inline void pop_opengl_params() {
 }
 
 void gFont::make_dlist( uint16_t ch ) {
-    SDL_Color color_fg = { 255, 255, 255, 255 };
+    SDL_Color color_fg = {255, 255, 255, 255};
     SDL_Surface * surface = TTF_RenderGlyph_Blended( font, ch, color_fg );
     if ( surface == nullptr ) {
         Panic( "TTF_RenderText_Blended" );
     }
     uint16_t width = next_p2( surface->w );
     uint16_t height = next_p2( surface->h );
-    SDL_Surface * s = SDL_CreateRGBSurface( 0, width, height, 32,
-        0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000 );
+    SDL_Surface * s = SDL_CreateRGBSurface(
+        0, width, height, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000 );
     SDL_BlitSurface( surface, nullptr, s, NULL );
-    glBindTexture( GL_TEXTURE_2D, tex[ch] );
+    glBindTexture( GL_TEXTURE_2D, tex[ ch ] );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+                  GL_UNSIGNED_BYTE, s->pixels );
     glNewList( list + ch, GL_COMPILE );
-    glBindTexture( GL_TEXTURE_2D, tex[ch] );
+    glBindTexture( GL_TEXTURE_2D, tex[ ch ] );
     glPushMatrix();
     float x = (float) surface->w / (float) width;
     float y = (float) surface->h / (float) height;
     glBegin( GL_TRIANGLE_FAN );
-        glTexCoord2d( x, 0 ); glVertex2f( surface->w, surface->h );
-        glTexCoord2d( 0, 0 ); glVertex2f( 0, surface->h );
-        glTexCoord2d( 0, y ); glVertex2f( 0, 0 );
-        glTexCoord2d( x, y ); glVertex2f( surface->w, 0 );
+    glTexCoord2d( x, 0 );
+    glVertex2f( surface->w, surface->h );
+    glTexCoord2d( 0, 0 );
+    glVertex2f( 0, surface->h );
+    glTexCoord2d( 0, y );
+    glVertex2f( 0, 0 );
+    glTexCoord2d( x, y );
+    glVertex2f( surface->w, 0 );
     glEnd();
     glPopMatrix();
     glTranslatef( surface->w, 0, 0 );
@@ -106,7 +112,7 @@ void gFont::draw( float x, float y, const char * fmt, ... ) {
         }
         push_opengl_params();
         glListBase( list );
-        float modelview_matrix[16];
+        float modelview_matrix[ 16 ];
         glGetFloatv( GL_MODELVIEW_MATRIX, modelview_matrix );
         glPushMatrix();
         glLoadIdentity();

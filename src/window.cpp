@@ -12,8 +12,9 @@ void WindowManager::MainLoop( void ) {
     SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 6 );
     SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 5 );
     // create SDL window
-    window = SDL_CreateWindow( windowname.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL );
+    window = SDL_CreateWindow( windowname.c_str(), SDL_WINDOWPOS_CENTERED,
+                               SDL_WINDOWPOS_CENTERED, width, height,
+                               SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL );
     if ( window == nullptr ) {
         Panic( SDL_GetError() );
     }
@@ -52,9 +53,7 @@ float WindowManager::GetFPS( void ) {
     return FpsRate;
 }
 
-void WindowManager::KillWindow( void ) {
-    quit_flag = true;
-}
+void WindowManager::KillWindow( void ) { quit_flag = true; }
 
 WindowManager::~WindowManager() {
     SDL_DestroyWindow( window );

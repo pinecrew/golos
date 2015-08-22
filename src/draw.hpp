@@ -12,12 +12,13 @@
 void gLoadImage( const char * filename, GLuint & texture );
 
 class gSphere {
-public:
+  public:
     gSphere( const gSphere & sphere );
     gSphere( std::size_t UResolution, std::size_t VResolution );
-    void draw( float radius = 1.0f, const vec3d & pos = { 0, 0, 0 } );
+    void draw( float radius = 1.0f, const vec3d & pos = {0, 0, 0} );
     ~gSphere();
-private:
+
+  private:
     const uint8_t vertex_count = 4;
     const uint8_t coords_count = 3;
     void insert_vec3d( std::size_t index, vec3d v );
