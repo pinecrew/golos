@@ -49,6 +49,13 @@ st2;
 //     нет
 void gLoadImage( const char * filename, GLuint & texture ) {
     SDL_Surface * Surface = IMG_Load( filename );
+    if ( Surface == nullptr ) {
+        std::string tmp = "Couldn't load ";
+        tmp += filename;
+        tmp += " image!";
+        Info( tmp.c_str() );
+        return;
+    }
     glGenTextures( 1, &texture );
     glBindTexture( GL_TEXTURE_2D, texture );
     int Mode = GL_RGB;
