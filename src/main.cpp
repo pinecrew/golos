@@ -119,7 +119,7 @@ void golos_init( void ) {
     font.load( "./data/FiraSans-Medium.ttf", 16 );
 
     gLoadImage( "./data/moon.png", moonTextureId );
-    gLoadImage( "./data/moon_normalmap.jpg", moonNormalsId );
+    gLoadImage( "./data/moon_normalmap.png", moonNormalsId );
     glGenTextures( 1, &earthTextureId );
 
     glEnable( GL_TEXTURE_2D );
