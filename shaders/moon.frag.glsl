@@ -1,11 +1,11 @@
+#version 120
+
 varying vec3 lightDir;
 varying vec3 normal;
 varying vec3 texCoord;
-varying vec3 smCoord;
 
 uniform sampler2D surfaceMap;
 uniform sampler2D normalMap;
-uniform sampler2D shadowMap;
 
 void main(void) {
     vec2 longitudeLatitude = vec2((atan(texCoord.y, texCoord.x) / 3.1415926 + 1.0) * 0.5,
@@ -29,9 +29,6 @@ void main(void) {
 
     float ambient = 0.3;
     float intensity = ambient + (1.0 - ambient) * max ( dot( n, l ), 0.0 );
-
-    if (smCoord.z > texture2D(shadowMap, smCoord.xy).x)
-        intensity = ambient;
 
     gl_FragColor =  intensity * color;
 }

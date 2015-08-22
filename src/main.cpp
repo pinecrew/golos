@@ -3,17 +3,16 @@
 #include <GL/glu.h>
 #include <iostream>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
 #include "draw.hpp"
 #include "math.hpp"
 #include "vectors.hpp"
 #include "window.hpp"
 #include "shader.hpp"
 #include "font.hpp"
-#include "shadow_map_fbo.hpp"
 
-vec3s camera = {10, M_PI/4, M_PI/2}; // положение камеры в сферических координатах
-vec3s sun_pos = {30, M_PI/2, M_PI/2};
+vec3s camera = {8, M_PI/4, 0}; // положение камеры в сферических координатах
+vec3s sun_pos = {20, M_PI/2, M_PI/2};
 vec3s moon_pos = {6, M_PI/2, M_PI/3};
 
 float smRatio = 2.0;
@@ -25,7 +24,6 @@ GLuint moonNormalsId;
 GLuint earthTextureId;
 
 ShaderProgram *sunShader, *earthShader, *moonShader;
-ShadowMapFBO m_shadowMapFBO;
 
 gSphere sphere( 30, 60 );
 gFont font;
@@ -63,22 +61,23 @@ void set_cell( int x, int y, bool create_flag ) {
 glm::mat4 setProjection ( float fieldOfView, float nearCut, float farCut ) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective( fieldOfView, (float) window.GetWidth() / (float) window.GetHeight(), nearCut, farCut );
+    gluPerspective( fieldOfView, (float) window.GetWidth() / (float) window.GetHeight(),
+            nearCut, farCut );
     glMatrixMode(GL_MODELVIEW);
-    return glm::perspective( fieldOfView, (float) window.GetWidth() / (float) window.GetHeight(), nearCut, farCut );
+    return glm::perspective( fieldOfView, (float) window.GetWidth() / (float) window.GetHeight(),
+                 nearCut, farCut );
 }
 
 
 glm::mat4 setView(vec3s position, vec3s lookAt) {
-    glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     auto rPos = vec3d(position);
     auto rLook = vec3d(lookAt);
-    float up = (camera.theta < 0) ? -1.0 : 1.0; // фикс для gluLookAt
+    float up = (position.theta < 0) ? -1.0 : 1.0; // фикс для gluLookAt
     gluLookAt(rPos.x,rPos.y,rPos.z,rLook.x,rLook.y,rLook.z,0,0,up);
     return glm::lookAt( glm::vec3(rPos.x,rPos.y,rPos.z),
-                glm::vec3(rLook.x,rLook.y,rLook.z),
-                glm::vec3(0,0,up) );
+                        glm::vec3(rLook.x,rLook.y,rLook.z),
+                        glm::vec3(0,0,up) );
 }
 
 void random_fill( void ) {
@@ -95,7 +94,6 @@ void golos_init( void ) {
     glEnable( GL_DEPTH_TEST );
     glShadeModel( GL_SMOOTH );
     glewInit();
-    m_shadowMapFBO.Init(window.GetWidth(), window.GetHeight());
 
     glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_LIGHTING);
@@ -169,10 +167,10 @@ void golos_event( SDL_Event * event ) {
                     camera.rotate(-dtheta, 0);
                     break;
                 case SDLK_RIGHT:
-                    moon_pos.rotate(0, dphi);
+                    camera.rotate(0, dphi);
                     break;
                 case SDLK_LEFT:
-                    moon_pos.rotate(0, -dphi);
+                    camera.rotate(0, -dphi);
                     break;
                 case SDLK_PERIOD:
                     if ( MAX_COUNT > 0 ) {
@@ -239,8 +237,8 @@ void golos_event( SDL_Event * event ) {
 }
 
 void update() {
-    //sun_pos.rotate(0, dphi / 3);
-    //moon_pos.rotate(0, dphi);
+    sun_pos.rotate(0, dphi / 3);
+    moon_pos.rotate(0, 3 * dphi);
 
     vec3d rect_sun = vec3d(sun_pos);
     float light_position[4] = {rect_sun.x, rect_sun.y, rect_sun.z, 1};
@@ -252,6 +250,7 @@ void update() {
         for ( int j = 0; j < cols; ++j )
             cells[i * cols + j] = ( (*f)[i][j] ) ? 0xff : 0x00;
 
+    glActiveTexture(GL_TEXTURE0);
     glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RED , GL_UNSIGNED_BYTE, cells );
 };
 
@@ -275,49 +274,23 @@ void golos_render( void ) {
     vec3d rect_sun = vec3d(sun_pos);
     vec3d rect_moon = vec3d(moon_pos);
 
-    // Рендер во фреймбуффер карты теней
-
-    m_shadowMapFBO.BindForWriting();
-
-    glClear(GL_DEPTH_BUFFER_BIT);
-
-    auto lightView = setView(sun_pos, {0, 0, 0});
-    auto lightProj = setProjection(60.0f, 1.0f, 100.0f);
-    auto lightVP = lightProj * lightView;
-
-    glCullFace(GL_FRONT);
-
-    // солнце не рисуем по понятным причинам
-    sphere.draw( 0.3f, rect_moon ); // луна
-    sphere.draw( 1.0f );            // земля
-
-    // Рендер сцены
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    m_shadowMapFBO.BindForReading(GL_TEXTURE3);
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     setView(camera, {0, 0, 0});
     setProjection(60.0f, 1.0f, 100.0f);
 
-    glActiveTexture(GL_TEXTURE0);
-    glCullFace(GL_BACK);
+
     sunShader->run();
     sphere.draw( 2.0f, rect_sun );
     sunShader->stop();
 
-    auto moonModel = glm::translate(glm::mat4(1.0), glm::vec3(rect_moon.x, rect_moon.y, rect_moon.z));
     moonShader->run();
-    moonShader->uniformMatrix4fv("lightMVP", lightVP * moonModel );
     moonShader->uniform1i("surfaceMap", 1);
     moonShader->uniform1i("normalMap", 2);
-    moonShader->uniform1i("shadowMap", 3);
     sphere.draw( 0.3f, rect_moon );
     moonShader->stop();
 
     earthShader->run();
-    earthShader->uniformMatrix4fv("lightMVP", lightVP );
-    earthShader->uniform1i("shadowMap", 3);
     sphere.draw( 1.0f );
     earthShader->stop();
 
