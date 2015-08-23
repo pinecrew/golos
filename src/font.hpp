@@ -13,6 +13,7 @@ class gFont {
   public:
     void load( std::string ttf_file, uint16_t height );
     void draw( float x, float y, const char * fmt, ... );
+    void drawUTF( float x, float y, const char * fmt, ... );
     ~gFont();
 
   private:
@@ -20,5 +21,6 @@ class gFont {
     void make_dlist( uint16_t ch );
     TTF_Font * font = nullptr;
     GLuint * tex = nullptr;
+    GLuint tex_utf;
     GLuint list = 0;
 };
