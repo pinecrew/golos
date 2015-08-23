@@ -236,7 +236,7 @@ void golos_event( SDL_Event * event ) {
 
 void update() {
     sun_pos.rotate( 0, dphi / 3 );
-    moon_pos.rotate( 0, 3 * dphi );
+    moon_pos.rotate( 0, dphi / 2 );
 
     vec3d rect_sun = vec3d( sun_pos );
     float light_position[ 4 ] = {rect_sun.x, rect_sun.y, rect_sun.z, 1};
