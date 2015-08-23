@@ -34,7 +34,7 @@ GLubyte * cells;
 field * f;
 
 WindowManager window( "Game Of Life On fieldace" );
-const char output_str[] = "[%s] fps: %.2f; theta: %.2f; phi: %.2f; задержка %d";
+const char output_str[] = "[%s] fps: %.2f; ϑ: %.2f; φ: %.2f; задержка %d";
 const char * game_status[] = {(const char *) "пауза",
                               ( const char * ) "симуляция"};
 bool game_step = false;
