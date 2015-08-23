@@ -154,14 +154,16 @@ void gFont::drawUTF( float x, float y, const char * fmt, ... ) {
         glMultMatrixf( modelview_matrix );
         glTranslatef( x, y, 0 );
         SDL_Color color_fg = {255, 255, 255, 255};
-        SDL_Surface * surface = TTF_RenderUTF8_Blended( font, text.c_str(), color_fg );
+        SDL_Surface * surface =
+            TTF_RenderUTF8_Blended( font, text.c_str(), color_fg );
         if ( surface == nullptr ) {
             Panic( "TTF_RenderText_Blended" );
         }
         uint16_t width = next_p2( surface->w );
         uint16_t height = next_p2( surface->h );
-        SDL_Surface * s = SDL_CreateRGBSurface(
-            0, width, height, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000 );
+        SDL_Surface * s =
+            SDL_CreateRGBSurface( 0, width, height, 32, 0x00ff0000, 0x0000ff00,
+                                  0x000000ff, 0xff000000 );
         SDL_BlitSurface( surface, nullptr, s, NULL );
         glBindTexture( GL_TEXTURE_2D, tex_utf );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );

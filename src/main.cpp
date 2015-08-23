@@ -35,7 +35,8 @@ field * f;
 
 WindowManager window( "Game Of Life On fieldace" );
 const char output_str[] = "[%s] fps: %.2f; theta: %.2f; phi: %.2f; задержка %d";
-const char * game_status[] = {(const char *) "пауза", ( const char * ) "симуляция"};
+const char * game_status[] = {(const char *) "пауза",
+                              ( const char * ) "симуляция"};
 bool game_step = false;
 uint8_t MAX_COUNT = 5;
 
@@ -295,7 +296,7 @@ void golos_render( void ) {
     glLoadIdentity();
     glColor3f( 1.0f, 1.0f, 1.0f );
     font.drawUTF( 10, 10, output_str, game_status[ int( game_step ) ],
-               window.GetFPS(), camera.theta, camera.phi, MAX_COUNT );
+                  window.GetFPS(), camera.theta, camera.phi, MAX_COUNT );
     glPopMatrix();
 
     golos_loop();
