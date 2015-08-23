@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <cstdlib>
 
 #include "math.hpp"
 #include "vectors.hpp"
@@ -13,6 +14,8 @@ class field {
   public:
     const std::size_t width, height;
     std::vector<bool> & operator[]( std::size_t i );
+    void random_fill();
+    void clear();
     void nextGeneration();
     void create( const vec3s & p );
     void kill( const vec3s & p );

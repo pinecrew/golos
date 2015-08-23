@@ -76,6 +76,16 @@ std::pair<std::size_t, std::size_t> field::cell_from_point( const vec3s & p ) {
     return {p.theta / M_PI * height, p.phi / 2 / M_PI * width};
 }
 
+void field::random_fill() {
+    for ( std::size_t i = 0; i < ( width * height ) / 3; i++ )
+        f[ rand() % height ][ rand() % width ] = true;
+}
+
+void field::clear() {
+    for ( auto & row : f )
+        std::fill( row.begin(), row.end(), false );
+}
+
 void field::create( const vec3s & p ) {
     auto c = cell_from_point( p );
     f[ c.first ][ c.second ] = true;

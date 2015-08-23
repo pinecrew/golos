@@ -19,10 +19,6 @@ float smRatio = 2.0;
 float dtheta = 0.01;
 float dphi = 0.01;
 
-GLuint moonTextureId;
-GLuint moonNormalsId;
-GLuint earthTextureId;
-
 ShaderProgram * sunShader, *earthShader, *moonShader;
 
 gSphere sphere( 30, 60 );
@@ -79,12 +75,6 @@ glm::mat4 setView( vec3s position, vec3s lookAt ) {
                         glm::vec3( 0, 0, up ) );
 }
 
-void random_fill( void ) {
-    for ( std::size_t i = 0; i < ( f->width * f->height ) / 3; i++ ) {
-        ( *f )[ rand() % f->height ][ rand() % f->width ] = true;
-    }
-}
-
 void golos_init( void ) {
     // init OpenGL params
     glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
@@ -114,10 +104,14 @@ void golos_init( void ) {
 
     f = new field( rows, cols );
     // рандомная инициализация
-    random_fill();
+    f->random_fill();
     cells = new GLubyte[ rows * cols ];
 
     font.load( "./data/FiraSans-Medium.ttf", 16 );
+
+    GLuint moonTextureId;
+    GLuint moonNormalsId;
+    GLuint earthTextureId;
 
     gLoadImage( "./data/moon.png", moonTextureId );
     gLoadImage( "./data/moon_normalmap.png", moonNormalsId );
@@ -180,14 +174,11 @@ void golos_event( SDL_Event * event ) {
             MAX_COUNT += 1;
             break;
         case SDLK_f:
-            random_fill();
+            f->clear();
+            f->random_fill();
             break;
         case SDLK_r:
-            for ( std::size_t i = 0; i < f->height; i++ ) {
-                for ( std::size_t j = 0; j < f->width; j++ ) {
-                    ( *f )[ i ][ j ] = false;
-                }
-            }
+            f->clear();
             break;
         default:
             break;
