@@ -29,7 +29,7 @@ int cols = 60;
 GLubyte * cells;
 field * f;
 
-WindowManager window( "Game Of Life On fieldace" );
+WindowManager window( "Game Of Life On Sphere" );
 const char output_str[] = "[%s] fps: %.2f; ϑ: %.2f; φ: %.2f; задержка %d";
 const char * game_status[] = {(const char *) "пауза",
                               ( const char * ) "симуляция"};
@@ -274,8 +274,8 @@ void golos_render( void ) {
     sunShader->stop();
 
     moonShader->run();
-    moonShader->uniform1i( "surfaceMap", 1 );
-    moonShader->uniform1i( "normalMap", 2 );
+    moonShader->uniform( "surfaceMap", 1 );
+    moonShader->uniform( "normalMap", 2 );
     sphere.draw( 0.3f, rect_moon );
     moonShader->stop();
 

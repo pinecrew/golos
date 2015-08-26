@@ -52,15 +52,7 @@ void ShaderProgram::run() { glUseProgram( program ); }
 
 void ShaderProgram::stop() { glUseProgram( 0 ); }
 
-void ShaderProgram::uniform1i( const char * varName, int value ) {
+void ShaderProgram::uniform( const char * varName, int value ) {
     glUniform1i( glGetUniformLocation( program, varName ), value );
 }
 
-void ShaderProgram::uniform2f( const char * varName, glm::vec2 value ) {
-    glUniform2f( glGetUniformLocation( program, varName ), value.x, value.y );
-}
-
-void ShaderProgram::uniformMatrix4fv( const char * varName, glm::mat4 value ) {
-    GLint location = glGetUniformLocation( program, varName );
-    glUniformMatrix4fv( location, 1, GL_FALSE, glm::value_ptr( value ) );
-}
