@@ -55,4 +55,3 @@ void ShaderProgram::stop() { glUseProgram( 0 ); }
 void ShaderProgram::uniform( const char * varName, int value ) {
     glUniform1i( glGetUniformLocation( program, varName ), value );
 }
-

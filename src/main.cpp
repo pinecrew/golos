@@ -38,18 +38,42 @@ uint8_t MAX_COUNT = 5;
 
 template <typename T> inline T sqr( const T & i ) { return ( i ) * ( i ); }
 
+glm::vec3 GetOGLPos( int x, int y ) {
+    GLint viewport[ 4 ];
+    GLdouble modelview[ 16 ];
+    GLdouble projection[ 16 ];
+    GLfloat winX, winY, winZ;
+    GLdouble posX, posY, posZ;
+
+    glGetDoublev( GL_MODELVIEW_MATRIX, modelview );
+    glGetDoublev( GL_PROJECTION_MATRIX, projection );
+    glGetIntegerv( GL_VIEWPORT, viewport );
+
+    winX = (float) x;
+    winY = (float) viewport[ 3 ] - (float) y;
+    glReadPixels( x, int( winY ), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ );
+
+    gluUnProject( winX, winY, winZ, modelview, projection, viewport, &posX,
+                  &posY, &posZ );
+
+    return glm::vec3( posX, posY, posZ );
+}
+
 void set_cell( int x, int y, bool create_flag ) {
-    // todo: написать рабочий код установки ячейки на сфере
-    // SDL_Point center = { window.GetWidth() / 2, window.GetHeight() / 2 };
-    // SDL_Point mouse = { x, y };
-    // if ( sqr( x - center.x ) + sqr( y - center.y ) < sqr( 1.0f ) ) {
-    //     vec3s point = screen_to_field( mouse, view_direction, center );
-    //     if ( create_flag ) {
-    //         f->create( point );
-    //     } else {
-    //         f->toggle( point );
-    //     }
-    // }
+    auto p = GetOGLPos( x, y );
+    if ( length( p ) <= 1.01f ) { // это радиус Земли
+        p = normalize( p );
+        vec3s point;
+        point.r = 1.0;
+        point.theta = acos( p.z );
+        point.phi = atan2( p.y, p.x );
+
+        if ( create_flag ) {
+            f->create( point );
+        } else {
+            f->toggle( point );
+        }
+    }
 }
 
 glm::mat4 setProjection( float fieldOfView, float nearCut, float farCut ) {
@@ -210,7 +234,7 @@ void golos_event( SDL_Event * event ) {
             break;
         case SDL_BUTTON_RIGHT:
             if ( button_right_set ) {
-                set_cell( event->button.x, event->button.y, true );
+                set_cell( event->button.x, event->button.y, false );
             }
             button_right_set = true;
             break;

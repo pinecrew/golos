@@ -9,7 +9,7 @@ uniform sampler2D surfaceMap;
 
 void main(void) {
     vec2 texCoord = vec2(( atan( normCoord.y, normCoord.x ) / PI + 1.0 ) * 0.5,
-                                  ( asin( normCoord.z ) / PI + 0.5 ));
+                                  ( acos( normCoord.z ) / PI ));
     vec4 color = texture2D( surfaceMap, texCoord );
     vec4 alive = vec4( 0.4, 1.0, 0.4, 1.0 );
     vec4 dead = vec4( 0.4, 0.4, 1.0, 1.0 );
