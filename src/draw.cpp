@@ -143,22 +143,14 @@ void gSphere::draw( float radius, const vec3d & position ) {
         glTranslatef( position.x, position.y, position.z );
     }
     // аналогично и для масштабирования сферы
-    // if ( radius != 1.0f ) {
-    //     glScalef( radius, radius, radius );
-    // }
-    std::size_t copy_count = max_count * coords_count * vertex_count;
-    auto tmp = new float[ copy_count ];
-    // осторожно, хак, иначе тени неправильно считаются
-    for ( std::size_t i = 0; i < copy_count; ++i ) {
-        tmp[ i ] = radius * vertex[ i ];
+    if ( radius != 1.0f ) {
+        glScalef( radius, radius, radius );
     }
     glEnableClientState( GL_VERTEX_ARRAY );
-    glVertexPointer( 3, GL_FLOAT, 0, tmp );
-    // glVertexPointer( 3, GL_FLOAT, 0, vertex );
+    glVertexPointer( 3, GL_FLOAT, 0, vertex );
     glDrawArrays( GL_TRIANGLE_STRIP, 0, max_count );
     glDisableClientState( GL_VERTEX_ARRAY );
     glPopMatrix();
-    delete[] tmp;
 }
 
 // функция деструктор
