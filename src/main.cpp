@@ -30,7 +30,7 @@ GLubyte * cells;
 Field * f;
 
 WindowManager window( "Game Of Life On Sphere" );
-const char outputStr[] = "[%s] fps: %.2f; ϑ: %.2f; φ: %.2f; задержка %d";
+const char outputStr[] = "[%s] fps: %d; ϑ: %.2f; φ: %.2f; задержка %d";
 const char * gameStatus[] = {(const char *) "пауза",
                              ( const char * ) "симуляция"};
 bool gameStep = false;

@@ -1,4 +1,5 @@
 #pragma once
+#include <unistd.h>
 #include <string>
 #include "error.hpp"
 
@@ -12,7 +13,7 @@ class WindowManager {
     void setEventFunc( void ( *param )( SDL_Event * event ) ) {
         eventCallback = param;
     }
-    float getFPS( void );
+    uint32_t getFPS( void );
     void killWindow( void );
     int getWidth( void ) { return width; }
     int getHeight( void ) { return height; }

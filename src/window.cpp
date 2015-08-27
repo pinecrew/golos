@@ -23,10 +23,10 @@ void WindowManager::mainLoop( void ) {
     if ( initCallback ) {
         initCallback();
     }
-    float last = 0.0f;
+    uint32_t last = 0;
     while ( !quitFlag ) {
-        float current = (float) SDL_GetTicks();
-        if ( current > last + 1000.0f / 60.0f ) {
+        uint32_t current = SDL_GetTicks();
+        if ( current > last + 10 ) {
             if ( eventCallback ) {
                 eventCallback( &event );
             }
@@ -36,16 +36,17 @@ void WindowManager::mainLoop( void ) {
             SDL_GL_SwapWindow( window );
             last = current;
         }
+        usleep( ( current - last ) * 1000 );
     }
 }
 
-float WindowManager::getFPS( void ) {
-    static float NewCount = 0.0f, LastCount = 0.0f, FpsRate = 0.0f;
+uint32_t WindowManager::getFPS( void ) {
+    static uint32_t NewCount = 0, LastCount = 0, FpsRate = 0;
     static int FrameCount = 0;
 
     NewCount = (float) SDL_GetTicks();
-    if ( ( NewCount - LastCount ) > 1000.0f ) {
-        FpsRate = ( FrameCount * 1000.0f ) / ( NewCount - LastCount );
+    if ( ( NewCount - LastCount ) > 1000 ) {
+        FpsRate = ( FrameCount * 1000 ) / ( NewCount - LastCount );
         LastCount = NewCount;
         FrameCount = 0;
     }
