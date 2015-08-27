@@ -18,9 +18,9 @@ class gSphere {
     ~gSphere();
 
   private:
-    const uint8_t vertex_count = 4;
-    const uint8_t coords_count = 3;
-    void insert_vec3d( std::size_t index, vec3d v );
-    std::size_t max_count;
+    const uint8_t vertexCount = 4;
+    const uint8_t coordsCount = 3;
+    void insertVec3d( std::size_t index, vec3d v );
+    std::size_t maxCount;
     float * vertex;
 };

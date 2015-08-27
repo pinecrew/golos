@@ -1,13 +1,13 @@
 #include "field.hpp"
 
-field::field( std::size_t h, std::size_t w ) : f( h ), width( w ), height( h ) {
+Field::Field( std::size_t h, std::size_t w ) : f( h ), width( w ), height( h ) {
     for ( std::size_t i = 0; i < h; ++i )
         this->f[ i ].assign( w, false );
 }
 
-std::vector<bool> & field::operator[]( std::size_t i ) { return this->f[ i ]; }
+std::vector<bool> & Field::operator[]( std::size_t i ) { return this->f[ i ]; }
 
-void field::nextGeneration() {
+void Field::nextGeneration() {
     // массив для подсчёта соседей
     auto tmp = new std::vector<char>[ height ];
     for ( std::size_t i = 0; i < height; ++i )
@@ -72,31 +72,31 @@ void field::nextGeneration() {
     delete[] tmp;
 }
 
-std::pair<std::size_t, std::size_t> field::cell_from_point( const vec3s & p ) {
+std::pair<std::size_t, std::size_t> Field::cellFromPoint( const vec3s & p ) {
     return {p.theta / M_PI * height, ( p.phi / M_2PI + 0.5 ) * width};
 }
 
-void field::random_fill() {
+void Field::randomFill() {
     for ( std::size_t i = 0; i < ( width * height ) / 3; i++ )
         f[ rand() % height ][ rand() % width ] = true;
 }
 
-void field::clear() {
+void Field::clear() {
     for ( auto & row : f )
         std::fill( row.begin(), row.end(), false );
 }
 
-void field::create( const vec3s & p ) {
-    auto c = cell_from_point( p );
+void Field::create( const vec3s & p ) {
+    auto c = cellFromPoint( p );
     f[ c.first ][ c.second ] = true;
 }
 
-void field::kill( const vec3s & p ) {
-    auto c = cell_from_point( p );
+void Field::kill( const vec3s & p ) {
+    auto c = cellFromPoint( p );
     f[ c.first ][ c.second ] = false;
 }
 
-void field::toggle( const vec3s & p ) {
-    auto c = cell_from_point( p );
+void Field::toggle( const vec3s & p ) {
+    auto c = cellFromPoint( p );
     f[ c.first ][ c.second ] = !f[ c.first ][ c.second ];
 }

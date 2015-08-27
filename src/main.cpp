@@ -12,8 +12,8 @@
 #include "font.hpp"
 
 vec3s camera = {8, M_PI / 4, 0}; // положение камеры в сферических координатах
-vec3s sun_pos = {20, M_PI / 2, M_PI / 2};
-vec3s moon_pos = {6, M_PI / 2, M_PI / 3};
+vec3s sunPos = {20, M_PI / 2, M_PI / 2};
+vec3s moonPos = {6, M_PI / 2, M_PI / 3};
 
 float smRatio = 2.0;
 float dtheta = 0.01;
@@ -27,13 +27,13 @@ gFont font;
 int rows = 30;
 int cols = 60;
 GLubyte * cells;
-field * f;
+Field * f;
 
 WindowManager window( "Game Of Life On Sphere" );
-const char output_str[] = "[%s] fps: %.2f; ϑ: %.2f; φ: %.2f; задержка %d";
-const char * game_status[] = {(const char *) "пауза",
-                              ( const char * ) "симуляция"};
-bool game_step = false;
+const char outputStr[] = "[%s] fps: %.2f; ϑ: %.2f; φ: %.2f; задержка %d";
+const char * gameStatus[] = {(const char *) "пауза",
+                             ( const char * ) "симуляция"};
+bool gameStep = false;
 uint8_t MAX_COUNT = 5;
 
 template <typename T> inline T sqr( const T & i ) { return ( i ) * ( i ); }
@@ -59,7 +59,7 @@ glm::vec3 GetOGLPos( int x, int y ) {
     return glm::vec3( posX, posY, posZ );
 }
 
-void set_cell( int x, int y, bool create_flag ) {
+void setCell( int x, int y, bool createFlag ) {
     auto p = GetOGLPos( x, y );
     if ( length( p ) <= 1.01f ) { // это радиус Земли
         p = normalize( p );
@@ -68,7 +68,7 @@ void set_cell( int x, int y, bool create_flag ) {
         point.theta = acos( p.z );
         point.phi = atan2( p.y, p.x );
 
-        if ( create_flag ) {
+        if ( createFlag ) {
             f->create( point );
         } else {
             f->toggle( point );
@@ -80,11 +80,11 @@ glm::mat4 setProjection( float fieldOfView, float nearCut, float farCut ) {
     glMatrixMode( GL_PROJECTION );
     glLoadIdentity();
     gluPerspective( fieldOfView,
-                    (float) window.GetWidth() / (float) window.GetHeight(),
+                    (float) window.getWidth() / (float) window.getHeight(),
                     nearCut, farCut );
     glMatrixMode( GL_MODELVIEW );
-    return glm::perspective( fieldOfView, (float) window.GetWidth() /
-                                              (float) window.GetHeight(),
+    return glm::perspective( fieldOfView, (float) window.getWidth() /
+                                              (float) window.getHeight(),
                              nearCut, farCut );
 }
 
@@ -99,7 +99,7 @@ glm::mat4 setView( vec3s position, vec3s lookAt ) {
                         glm::vec3( 0, 0, up ) );
 }
 
-void golos_init( void ) {
+void golosInit( void ) {
     // init OpenGL params
     glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
     glClearDepth( 1.0 );
@@ -126,9 +126,9 @@ void golos_init( void ) {
     sunShader->addShader( "./shaders/sun.frag.glsl", GL_FRAGMENT_SHADER );
     sunShader->link();
 
-    f = new field( rows, cols );
+    f = new Field( rows, cols );
     // рандомная инициализация
-    f->random_fill();
+    f->randomFill();
     cells = new GLubyte[ rows * cols ];
 
     font.load( "./data/FiraSans-Medium.ttf", 16 );
@@ -159,23 +159,23 @@ void golos_init( void ) {
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
 }
 
-void golos_event( SDL_Event * event ) {
-    static uint8_t button_left_set = false;
-    static uint8_t button_right_set = false;
-    static uint16_t mouse_x = 0, mouse_y = 0;
+void golosEvent( SDL_Event * event ) {
+    static uint8_t buttonLeftSet = false;
+    static uint8_t buttonRightSet = false;
+    static uint16_t mouseX = 0, mouseY = 0;
     SDL_PollEvent( event );
     switch ( event->type ) {
     case SDL_QUIT:
-        window.KillWindow();
+        window.killWindow();
         break;
     case SDL_KEYDOWN:
         switch ( event->key.keysym.sym ) {
         case SDLK_SPACE:
-            game_step = !game_step;
+            gameStep = !gameStep;
             break;
         case SDLK_ESCAPE:
         case SDLK_q:
-            window.KillWindow();
+            window.killWindow();
             break;
         case SDLK_DOWN:
             camera.rotate( dtheta, 0 );
@@ -199,7 +199,7 @@ void golos_event( SDL_Event * event ) {
             break;
         case SDLK_f:
             f->clear();
-            f->random_fill();
+            f->randomFill();
             break;
         case SDLK_r:
             f->clear();
@@ -209,14 +209,14 @@ void golos_event( SDL_Event * event ) {
         }
         break;
     case SDL_MOUSEMOTION:
-        if ( button_left_set ) {
-            camera.rotate( -( event->button.y - mouse_y ) / 100.0f,
-                           -( event->button.x - mouse_x ) / 100.0f );
-            mouse_x = event->button.x;
-            mouse_y = event->button.y;
+        if ( buttonLeftSet ) {
+            camera.rotate( -( event->button.y - mouseY ) / 100.0f,
+                           -( event->button.x - mouseX ) / 100.0f );
+            mouseX = event->button.x;
+            mouseY = event->button.y;
         }
-        if ( button_right_set ) {
-            set_cell( event->button.x, event->button.y, true );
+        if ( buttonRightSet ) {
+            setCell( event->button.x, event->button.y, true );
         }
         break;
     case SDL_MOUSEWHEEL:
@@ -226,48 +226,48 @@ void golos_event( SDL_Event * event ) {
     case SDL_MOUSEBUTTONDOWN:
         switch ( event->button.button ) {
         case SDL_BUTTON_LEFT:
-            if ( !button_left_set ) {
-                mouse_x = event->button.x;
-                mouse_y = event->button.y;
+            if ( !buttonLeftSet ) {
+                mouseX = event->button.x;
+                mouseY = event->button.y;
             }
-            button_left_set = true;
+            buttonLeftSet = true;
             break;
         case SDL_BUTTON_RIGHT:
-            if ( !button_right_set ) {
-                set_cell( event->button.x, event->button.y, false );
+            if ( !buttonRightSet ) {
+                setCell( event->button.x, event->button.y, false );
             }
-            button_right_set = true;
+            buttonRightSet = true;
             break;
         default:
             break;
         }
         break;
     case SDL_MOUSEBUTTONUP:
-        button_left_set = button_right_set = false;
+        buttonLeftSet = buttonRightSet = false;
         break;
     default:
         break;
     }
 }
 
-void golos_loop( void ) {
+void golosLoop( void ) {
     static int counter = 0;
     // блок управления автоматической генерации нового поколения
     // со скоростью MAX_COUNT
-    if ( game_step && counter >= MAX_COUNT ) {
+    if ( gameStep && counter >= MAX_COUNT ) {
         f->nextGeneration();
         counter = 0;
     } else {
         counter++;
     }
 
-    sun_pos.rotate( 0, dphi / 3 );
-    moon_pos.rotate( 0, dphi / 2 );
+    sunPos.rotate( 0, dphi / 3 );
+    moonPos.rotate( 0, dphi / 2 );
 
-    vec3d rect_sun = vec3d( sun_pos );
-    float light_position[ 4 ] = {rect_sun.x, rect_sun.y, rect_sun.z, 1};
+    vec3d rectSun = vec3d( sunPos );
+    float lightPosition[ 4 ] = {rectSun.x, rectSun.y, rectSun.z, 1};
 
-    glLightfv( GL_LIGHT0, GL_POSITION, light_position );
+    glLightfv( GL_LIGHT0, GL_POSITION, lightPosition );
 
     // формируем текстуру
     for ( int i = 0; i < rows; ++i )
@@ -279,11 +279,11 @@ void golos_loop( void ) {
                   GL_UNSIGNED_BYTE, cells );
 }
 
-void golos_render( void ) {
-    golos_loop();
+void golosRender( void ) {
+    golosLoop();
 
-    vec3d rect_sun = vec3d( sun_pos );
-    vec3d rect_moon = vec3d( moon_pos );
+    vec3d rectSun = vec3d( sunPos );
+    vec3d rectMoon = vec3d( moonPos );
 
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -291,13 +291,13 @@ void golos_render( void ) {
     setProjection( 60.0f, 1.0f, 100.0f );
 
     sunShader->run();
-    sphere.draw( 2.0f, rect_sun );
+    sphere.draw( 2.0f, rectSun );
     sunShader->stop();
 
     moonShader->run();
     moonShader->uniform( "surfaceMap", 1 );
     moonShader->uniform( "normalMap", 2 );
-    sphere.draw( 0.3f, rect_moon );
+    sphere.draw( 0.3f, rectMoon );
     moonShader->stop();
 
     earthShader->run();
@@ -307,20 +307,20 @@ void golos_render( void ) {
     glPushMatrix();
     glLoadIdentity();
     glColor3f( 1.0f, 1.0f, 1.0f );
-    font.drawUTF( 10, 10, output_str, game_status[ int( game_step ) ],
-                  window.GetFPS(), camera.theta, camera.phi, MAX_COUNT );
+    font.drawUTF( 10, 10, outputStr, gameStatus[ int( gameStep ) ],
+                  window.getFPS(), camera.theta, camera.phi, MAX_COUNT );
     glPopMatrix();
 
     glFlush();
 }
 
-void golos_destroy( void ) { delete[] cells; }
+void golosDestroy( void ) { delete[] cells; }
 
 int main( int argc, char ** argv ) {
-    window.SetInitFunc( golos_init );
-    window.SetRenderFunc( golos_render );
-    window.SetEventFunc( golos_event );
-    window.MainLoop();
-    golos_destroy();
+    window.setInitFunc( golosInit );
+    window.setRenderFunc( golosRender );
+    window.setEventFunc( golosEvent );
+    window.mainLoop();
+    golosDestroy();
     return EXIT_SUCCESS;
 }

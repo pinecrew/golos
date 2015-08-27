@@ -24,13 +24,13 @@ class ShadowMapFBO {
 
     ~ShadowMapFBO();
 
-    bool Init( unsigned int WindowWidth, unsigned int WindowHeight );
+    bool init( unsigned int windowWidth, unsigned int windowHeight );
 
-    void BindForWriting();
+    void bindForWriting();
 
-    void BindForReading( GLenum TextureUnit );
+    void bindForReading( GLenum textureUnit );
 
   private:
-    GLuint m_fbo;
-    GLuint m_shadowMap;
+    GLuint fbo;
+    GLuint shadowMap;
 };

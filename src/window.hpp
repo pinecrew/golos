@@ -4,18 +4,18 @@
 
 class WindowManager {
   public:
-    WindowManager( std::string title, int w_size = 640, int h_size = 640 )
-        : windowname( title ), width( w_size ), height( h_size ){};
-    void MainLoop( void );
-    void SetInitFunc( void ( *param )( void ) ) { init_callback = param; }
-    void SetRenderFunc( void ( *param )( void ) ) { render_callback = param; }
-    void SetEventFunc( void ( *param )( SDL_Event * event ) ) {
-        event_callback = param;
+    WindowManager( std::string title, int wSize = 640, int hSize = 640 )
+        : windowName( title ), width( wSize ), height( hSize ){};
+    void mainLoop( void );
+    void setInitFunc( void ( *param )( void ) ) { initCallback = param; }
+    void setRenderFunc( void ( *param )( void ) ) { renderCallback = param; }
+    void setEventFunc( void ( *param )( SDL_Event * event ) ) {
+        eventCallback = param;
     }
-    float GetFPS( void );
-    void KillWindow( void );
-    int GetWidth( void ) { return width; }
-    int GetHeight( void ) { return height; }
+    float getFPS( void );
+    void killWindow( void );
+    int getWidth( void ) { return width; }
+    int getHeight( void ) { return height; }
     ~WindowManager();
 
   private:
@@ -23,10 +23,10 @@ class WindowManager {
     SDL_Renderer * render = nullptr;
     SDL_GLContext context;
     SDL_Event event;
-    std::string windowname;
-    bool quit_flag = false;
+    std::string windowName;
+    bool quitFlag = false;
     int width, height;
-    void ( *init_callback )( void ) = nullptr;
-    void ( *render_callback )( void ) = nullptr;
-    void ( *event_callback )( SDL_Event * event ) = nullptr;
+    void ( *initCallback )( void ) = nullptr;
+    void ( *renderCallback )( void ) = nullptr;
+    void ( *eventCallback )( SDL_Event * event ) = nullptr;
 };

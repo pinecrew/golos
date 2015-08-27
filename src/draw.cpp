@@ -32,10 +32,10 @@ void gLoadImage( const char * filename, GLuint & texture ) {
 // выходные параметры:
 //     нет
 gSphere::gSphere( const gSphere & sphere ) {
-    max_count = sphere.max_count;
-    size_t copy_count = max_count * coords_count * vertex_count;
-    vertex = new float[ copy_count ];
-    std::memcpy( (void *) vertex, (void *) sphere.vertex, copy_count );
+    maxCount = sphere.maxCount;
+    size_t copyCount = maxCount * coordsCount * vertexCount;
+    vertex = new float[ copyCount ];
+    std::memcpy( (void *) vertex, (void *) sphere.vertex, copyCount );
 }
 
 // функция инициализации сферы
@@ -60,8 +60,8 @@ gSphere::gSphere( std::size_t UResolution, std::size_t VResolution ) {
     // и вертикали
     const float stepV = ( endV - startV ) / (float) VResolution;
     // количество необходимых вершин
-    max_count = UResolution * VResolution * vertex_count;
-    vertex = new float[ max_count * coords_count ];
+    maxCount = UResolution * VResolution * vertexCount;
+    vertex = new float[ maxCount * coordsCount ];
     std::size_t count = 0;
     for ( std::size_t i = 0; i < UResolution; i++ ) {
         for ( std::size_t j = 0; j < VResolution; j++ ) {
@@ -77,12 +77,12 @@ gSphere::gSphere( std::size_t UResolution, std::size_t VResolution ) {
             float un = (float) ( i + 1 ) * stepU + startU;
             float vn = (float) ( j + 1 ) * stepV + startV;
             // и добавляем их в массив
-            insert_vec3d( count + 0, vec3d( radius, un, v, true ) );
-            insert_vec3d( count + 3, vec3d( radius, un, vn, true ) );
-            insert_vec3d( count + 6, vec3d( radius, u, v, true ) );
-            insert_vec3d( count + 9, vec3d( radius, u, vn, true ) );
+            insertVec3d( count + 0, vec3d( radius, un, v, true ) );
+            insertVec3d( count + 3, vec3d( radius, un, vn, true ) );
+            insertVec3d( count + 6, vec3d( radius, u, v, true ) );
+            insertVec3d( count + 9, vec3d( radius, u, vn, true ) );
             // и увеличиваем вершинный счётчик
-            count += vertex_count * coords_count;
+            count += vertexCount * coordsCount;
         }
     }
 }
@@ -107,7 +107,7 @@ void gSphere::draw( float radius, const vec3d & position ) {
     }
     glEnableClientState( GL_VERTEX_ARRAY );
     glVertexPointer( 3, GL_FLOAT, 0, vertex );
-    glDrawArrays( GL_TRIANGLE_STRIP, 0, max_count );
+    glDrawArrays( GL_TRIANGLE_STRIP, 0, maxCount );
     glDisableClientState( GL_VERTEX_ARRAY );
     glPopMatrix();
 }
@@ -123,7 +123,7 @@ gSphere::~gSphere() { delete[] vertex; }
 //     coord -- координаты вершины
 // выходные параметры:
 //     нет
-void gSphere::insert_vec3d( std::size_t index, vec3d coord ) {
+void gSphere::insertVec3d( std::size_t index, vec3d coord ) {
     vertex[ index + 0 ] = coord.x;
     vertex[ index + 1 ] = coord.y;
     vertex[ index + 2 ] = coord.z;

@@ -1,6 +1,6 @@
 #include "font.hpp"
 
-static inline int next_p2( int a ) {
+static inline int nextP2( int a ) {
     int rval = 1;
 
     while ( rval < a ) {
@@ -9,7 +9,7 @@ static inline int next_p2( int a ) {
     return rval;
 }
 
-inline void push_opengl_params() {
+inline void pushOpenglParams() {
     GLint viewport[ 4 ];
     glPushAttrib( GL_TRANSFORM_BIT );
     glGetIntegerv( GL_VIEWPORT, viewport );
@@ -28,7 +28,7 @@ inline void push_opengl_params() {
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 }
 
-inline void pop_opengl_params() {
+inline void popOpenglParams() {
     glPopAttrib();
     glPushAttrib( GL_TRANSFORM_BIT );
     glMatrixMode( GL_PROJECTION );
@@ -36,14 +36,14 @@ inline void pop_opengl_params() {
     glPopAttrib();
 }
 
-void gFont::make_dlist( uint16_t ch ) {
-    SDL_Color color_fg = {255, 255, 255, 255};
-    SDL_Surface * surface = TTF_RenderGlyph_Blended( font, ch, color_fg );
+void gFont::makeDlist( uint16_t ch ) {
+    SDL_Color colorFg = {255, 255, 255, 255};
+    SDL_Surface * surface = TTF_RenderGlyph_Blended( font, ch, colorFg );
     if ( surface == nullptr ) {
         Panic( "TTF_RenderText_Blended" );
     }
-    uint16_t width = next_p2( surface->w );
-    uint16_t height = next_p2( surface->h );
+    uint16_t width = nextP2( surface->w );
+    uint16_t height = nextP2( surface->h );
     SDL_Surface * s = SDL_CreateRGBSurface(
         0, width, height, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000 );
     SDL_BlitSurface( surface, nullptr, s, NULL );
@@ -74,19 +74,19 @@ void gFont::make_dlist( uint16_t ch ) {
     SDL_FreeSurface( s );
 }
 
-void gFont::load( std::string fontname, uint16_t height ) {
+void gFont::load( std::string fontName, uint16_t height ) {
     tex = new GLuint[ FONT_LIST_SIZE ];
     if ( TTF_Init() == -1 ) {
         Panic( TTF_GetError() );
     }
-    font = TTF_OpenFont( fontname.c_str(), height );
+    font = TTF_OpenFont( fontName.c_str(), height );
     if ( font == nullptr ) {
         Panic( TTF_GetError() );
     }
     list = glGenLists( FONT_LIST_SIZE );
     glGenTextures( FONT_LIST_SIZE, tex );
     for ( uint16_t i = 32; i < FONT_LIST_SIZE; i++ ) {
-        make_dlist( i );
+        makeDlist( i );
     }
 }
 
@@ -111,17 +111,17 @@ void gFont::draw( float x, float y, const char * fmt, ... ) {
                 size *= 2;
             }
         }
-        push_opengl_params();
+        pushOpenglParams();
         glListBase( list );
-        float modelview_matrix[ 16 ];
-        glGetFloatv( GL_MODELVIEW_MATRIX, modelview_matrix );
+        float modelviewMatrix[ 16 ];
+        glGetFloatv( GL_MODELVIEW_MATRIX, modelviewMatrix );
         glPushMatrix();
         glLoadIdentity();
-        glMultMatrixf( modelview_matrix );
+        glMultMatrixf( modelviewMatrix );
         glTranslatef( x, y, 0 );
         glCallLists( text.length(), GL_UNSIGNED_BYTE, text.c_str() );
         glPopMatrix();
-        pop_opengl_params();
+        popOpenglParams();
     }
 }
 
@@ -146,31 +146,31 @@ void gFont::drawUTF( float x, float y, const char * fmt, ... ) {
                 size *= 2;
             }
         }
-        push_opengl_params();
-        float modelview_matrix[ 16 ];
-        glGetFloatv( GL_MODELVIEW_MATRIX, modelview_matrix );
+        pushOpenglParams();
+        float modelviewMatrix[ 16 ];
+        glGetFloatv( GL_MODELVIEW_MATRIX, modelviewMatrix );
         glPushMatrix();
         glLoadIdentity();
-        glMultMatrixf( modelview_matrix );
+        glMultMatrixf( modelviewMatrix );
         glTranslatef( x, y, 0 );
-        SDL_Color color_fg = {255, 255, 255, 255};
+        SDL_Color colorFg = {255, 255, 255, 255};
         SDL_Surface * surface =
-            TTF_RenderUTF8_Blended( font, text.c_str(), color_fg );
+            TTF_RenderUTF8_Blended( font, text.c_str(), colorFg );
         if ( surface == nullptr ) {
             Panic( "TTF_RenderText_Blended" );
         }
-        uint16_t width = next_p2( surface->w );
-        uint16_t height = next_p2( surface->h );
+        uint16_t width = nextP2( surface->w );
+        uint16_t height = nextP2( surface->h );
         SDL_Surface * s =
             SDL_CreateRGBSurface( 0, width, height, 32, 0x00ff0000, 0x0000ff00,
                                   0x000000ff, 0xff000000 );
         SDL_BlitSurface( surface, nullptr, s, NULL );
-        glBindTexture( GL_TEXTURE_2D, tex_utf );
+        glBindTexture( GL_TEXTURE_2D, texUtf );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
         glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
                       GL_UNSIGNED_BYTE, s->pixels );
-        glBindTexture( GL_TEXTURE_2D, tex_utf );
+        glBindTexture( GL_TEXTURE_2D, texUtf );
         float x = (float) surface->w / (float) width;
         float y = (float) surface->h / (float) height;
         glBegin( GL_TRIANGLE_FAN );
@@ -188,7 +188,7 @@ void gFont::drawUTF( float x, float y, const char * fmt, ... ) {
         SDL_FreeSurface( s );
         glEnd();
         glPopMatrix();
-        pop_opengl_params();
+        popOpenglParams();
     }
 }
 

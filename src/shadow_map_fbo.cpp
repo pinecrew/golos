@@ -19,55 +19,55 @@
 
 #include "shadow_map_fbo.hpp"
 
-ShadowMapFBO::ShadowMapFBO() : m_fbo( 0 ), m_shadowMap( 0 ){};
+ShadowMapFBO::ShadowMapFBO() : fbo( 0 ), shadowMap( 0 ){};
 
 ShadowMapFBO::~ShadowMapFBO() {
-    if ( m_fbo != 0 ) {
-        glDeleteFramebuffers( 1, &m_fbo );
+    if ( fbo != 0 ) {
+        glDeleteFramebuffers( 1, &fbo );
     }
 
-    if ( m_shadowMap != 0 ) {
-        glDeleteTextures( 1, &m_shadowMap );
+    if ( shadowMap != 0 ) {
+        glDeleteTextures( 1, &shadowMap );
     }
 }
 
-bool ShadowMapFBO::Init( unsigned int WindowWidth, unsigned int WindowHeight ) {
+bool ShadowMapFBO::init( unsigned int windowWidth, unsigned int windowHeight ) {
     // Create the FBO
-    glGenFramebuffers( 1, &m_fbo );
+    glGenFramebuffers( 1, &fbo );
 
     // Create the depth buffer
-    glGenTextures( 1, &m_shadowMap );
-    glBindTexture( GL_TEXTURE_2D, m_shadowMap );
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, WindowWidth,
-                  WindowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
+    glGenTextures( 1, &shadowMap );
+    glBindTexture( GL_TEXTURE_2D, shadowMap );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, windowWidth,
+                  windowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
 
-    glBindFramebuffer( GL_FRAMEBUFFER, m_fbo );
+    glBindFramebuffer( GL_FRAMEBUFFER, fbo );
     glFramebufferTexture2D( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                            GL_TEXTURE_2D, m_shadowMap, 0 );
+                            GL_TEXTURE_2D, shadowMap, 0 );
 
     // Disable writes to the color buffer
     glDrawBuffer( GL_NONE );
     glReadBuffer( GL_NONE );
 
-    GLenum Status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
+    GLenum status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
 
-    if ( Status != GL_FRAMEBUFFER_COMPLETE ) {
-        printf( "FB error, status: 0x%x\n", Status );
+    if ( status != GL_FRAMEBUFFER_COMPLETE ) {
+        printf( "FB error, status: 0x%x\n", status );
         return false;
     }
 
     return true;
 }
 
-void ShadowMapFBO::BindForWriting() {
-    glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_fbo );
+void ShadowMapFBO::bindForWriting() {
+    glBindFramebuffer( GL_DRAW_FRAMEBUFFER, fbo );
 }
 
-void ShadowMapFBO::BindForReading( GLenum TextureUnit ) {
-    glActiveTexture( TextureUnit );
-    glBindTexture( GL_TEXTURE_2D, m_shadowMap );
+void ShadowMapFBO::bindForReading( GLenum textureUnit ) {
+    glActiveTexture( textureUnit );
+    glBindTexture( GL_TEXTURE_2D, shadowMap );
 }

@@ -1,9 +1,9 @@
 #include "error.hpp"
 
 void Panic( const char * error ) {
-    std::string error_data = error;
-    error_data += " failure!";
-    SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", error_data.c_str(),
+    std::string errorData = error;
+    errorData += " failure!";
+    SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", errorData.c_str(),
                               nullptr );
     exit( EXIT_FAILURE );
 }
