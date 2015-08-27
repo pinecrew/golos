@@ -30,7 +30,8 @@ GLubyte * cells;
 Field * f;
 
 WindowManager window( "Game Of Life On Sphere" );
-const char outputStr[] = "[%s] fps: %d; ϑ: %.2f; φ: %.2f; задержка %d";
+const char outputStr[] =
+    "[%s] fps: %d; ϑ: %.2f; φ: %.2f; задержка: %d; популяция: %d";
 const char * gameStatus[] = {(const char *) "пауза",
                              ( const char * ) "симуляция"};
 bool gameStep = false;
@@ -101,7 +102,7 @@ glm::mat4 setView( vec3s position, vec3s lookAt ) {
 
 void golosInit( void ) {
     // init OpenGL params
-    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+    glClearColor( 0.05f, 0.05f, 0.1f, 0.0f );
     glClearDepth( 1.0 );
     glDepthFunc( GL_LESS );
     glEnable( GL_DEPTH_TEST );
@@ -308,7 +309,8 @@ void golosRender( void ) {
     glLoadIdentity();
     glColor3f( 1.0f, 1.0f, 1.0f );
     font.drawUTF( 10, 10, outputStr, gameStatus[ int( gameStep ) ],
-                  window.getFPS(), camera.theta, camera.phi, MAX_COUNT );
+                  window.getFPS(), camera.theta, camera.phi, MAX_COUNT,
+                  f->population() );
     glPopMatrix();
 
     glFlush();

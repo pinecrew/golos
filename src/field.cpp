@@ -64,10 +64,13 @@ void Field::nextGeneration() {
         }
 
     // 4. Установка нового состояния
+    count = 0;
     for ( std::size_t i = 0; i < height; ++i )
-        for ( std::size_t j = 0; j < width; ++j )
+        for ( std::size_t j = 0; j < width; ++j ) {
             f[ i ][ j ] =
                 ( tmp[ i ][ j ] == 2 && f[ i ][ j ] ) || ( tmp[ i ][ j ] == 3 );
+            count += f[ i ][ j ];
+        }
 
     delete[] tmp;
 }
@@ -100,3 +103,5 @@ void Field::toggle( const vec3s & p ) {
     auto c = cellFromPoint( p );
     f[ c.first ][ c.second ] = !f[ c.first ][ c.second ];
 }
+
+int Field::population() { return count; }
