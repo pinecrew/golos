@@ -233,7 +233,7 @@ void golos_event( SDL_Event * event ) {
             button_left_set = true;
             break;
         case SDL_BUTTON_RIGHT:
-            if ( button_right_set ) {
+            if ( !button_right_set ) {
                 set_cell( event->button.x, event->button.y, false );
             }
             button_right_set = true;
@@ -250,7 +250,17 @@ void golos_event( SDL_Event * event ) {
     }
 }
 
-void update() {
+void golos_loop( void ) {
+    static int counter = 0;
+    // блок управления автоматической генерации нового поколения
+    // со скоростью MAX_COUNT
+    if ( game_step && counter >= MAX_COUNT ) {
+        f->nextGeneration();
+        counter = 0;
+    } else {
+        counter++;
+    }
+
     sun_pos.rotate( 0, dphi / 3 );
     moon_pos.rotate( 0, dphi / 2 );
 
@@ -267,23 +277,10 @@ void update() {
     glActiveTexture( GL_TEXTURE0 );
     glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RED,
                   GL_UNSIGNED_BYTE, cells );
-};
-
-void golos_loop( void ) {
-    static int counter = 0;
-    // блок управления автоматической генерации нового поколения
-    // со скоростью MAX_COUNT
-    if ( game_step && counter >= MAX_COUNT ) {
-        f->nextGeneration();
-        counter = 0;
-    } else {
-        counter++;
-    }
 }
 
 void golos_render( void ) {
-
-    update();
+    golos_loop();
 
     vec3d rect_sun = vec3d( sun_pos );
     vec3d rect_moon = vec3d( moon_pos );
@@ -313,8 +310,6 @@ void golos_render( void ) {
     font.drawUTF( 10, 10, output_str, game_status[ int( game_step ) ],
                   window.GetFPS(), camera.theta, camera.phi, MAX_COUNT );
     glPopMatrix();
-
-    golos_loop();
 
     glFlush();
 }
