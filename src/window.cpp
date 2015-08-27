@@ -23,6 +23,7 @@ void WindowManager::mainLoop( void ) {
     if ( initCallback ) {
         initCallback();
     }
+    SDL_GL_SetSwapInterval( 1 );
     uint32_t last = 0;
     while ( !quitFlag ) {
         uint32_t current = SDL_GetTicks();
