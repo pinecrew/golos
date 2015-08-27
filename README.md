@@ -45,3 +45,5 @@
   * zlib
   * libpng
   * FreeType2
+ * GLM
+ * GLEW
