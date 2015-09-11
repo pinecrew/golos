@@ -1,5 +1,7 @@
 #include "window.hpp"
 
+void WindowManager::setFrameRate( uint32_t fps ) { framerate = 1000 / fps; }
+
 void WindowManager::mainLoop( void ) {
     // init SDL subsystems
     if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_EVENTS ) ) {
@@ -24,10 +26,11 @@ void WindowManager::mainLoop( void ) {
         initCallback();
     }
     SDL_GL_SetSwapInterval( 1 );
-    uint32_t last = 0;
+    uint32_t previousTick = SDL_GetTicks();
     while ( !quitFlag ) {
-        uint32_t current = SDL_GetTicks();
-        if ( current > last + 10 ) {
+        uint32_t currentTick = SDL_GetTicks();
+        uint32_t delta = currentTick - previousTick;
+        if ( delta >= framerate ) {
             if ( eventCallback ) {
                 eventCallback( &event );
             }
@@ -35,9 +38,10 @@ void WindowManager::mainLoop( void ) {
                 renderCallback();
             }
             SDL_GL_SwapWindow( window );
-            last = current;
+            previousTick = currentTick;
+        } else {
+            usleep( 1000 );
         }
-        usleep( ( current - last ) * 1000 );
     }
 }
 
@@ -45,7 +49,7 @@ uint32_t WindowManager::getFPS( void ) {
     static uint32_t NewCount = 0, LastCount = 0, FpsRate = 0;
     static int FrameCount = 0;
 
-    NewCount = (float) SDL_GetTicks();
+    NewCount = SDL_GetTicks();
     if ( ( NewCount - LastCount ) > 1000 ) {
         FpsRate = ( FrameCount * 1000 ) / ( NewCount - LastCount );
         LastCount = NewCount;

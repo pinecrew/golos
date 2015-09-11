@@ -319,6 +319,7 @@ void golosRender( void ) {
 void golosDestroy( void ) { delete[] cells; }
 
 int main( int argc, char ** argv ) {
+    window.setFrameRate( 60 );
     window.setInitFunc( golosInit );
     window.setRenderFunc( golosRender );
     window.setEventFunc( golosEvent );
