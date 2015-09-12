@@ -3,15 +3,15 @@ CFLAGS = -Wall -std=c++11 $(shell sdl2-config --cflags)
 LFLAGS = $(shell sdl2-config --libs) -lSDL2_image -lSDL2_ttf
 PLATFORM = $(shell uname -s)
 
-ifeq ($(RELEASE), 1)
+ifeq ($(RELEASE), yes)
 	LFLAGS += -O3
 endif
-ifeq ($(COMPACT), 1)
+ifeq ($(COMPACT), yes)
 	CFLAGS += -ffreestanding -fno-inline -fdata-sections -ffunction-sections \
 		-fno-exceptions -fno-asynchronous-unwind-tables
-	LFLAGS += -Os 
+	LFLAGS += -Os
 endif
-ifeq ($(DEBUG), 1)
+ifeq ($(DEBUG), yes)
 	LFLAGS += -ggdb -g3 -pg -O0
 endif
 ifeq ($(PLATFORM), Linux)

@@ -39,7 +39,26 @@
  * Шейдеры версии 1.50 или 3.30
  * Тени
 
-## Необходимые компоненты
+## Компиляция проекта
+### Windows
+Необходимо установить MSYS2 по следующей [инструкции](https://msys2.github.io/) и следующие пакеты
+
+Для 32-битной системы:
+```
+$ pacman -S make mingw-w64-i686-gcc mingw-w64-i686-SDL2 mingw-w64-i686-SDL2_image
+            mingw-w64-i686-SDL2_ttf mingw-w64-i686-glew mingw-w64-i686-glm
+```
+
+Для 64-битной системы:
+```
+$ pacman -S make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image
+            mingw-w64-x86_64-SDL2_ttf mingw-w64-x86_64-glew mingw-w64-x86_64-glm
+```
+
+### Linux
+Обратитесь к документации вашего дистрибутива для подробной информации.
+
+Необходимые компоненты:
  * SDL2
  * SDL2_image, SDL2_ttf
   * zlib
@@ -47,3 +66,8 @@
   * FreeType2
  * GLM
  * GLEW
+
+### Компиляция
+```
+$ make RELEASE=yes
+```
