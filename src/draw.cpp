@@ -21,6 +21,9 @@ void gLoadImage( const char * filename, GLuint & texture ) {
     if ( Surface->format->BytesPerPixel == 4 ) {
         Mode = GL_RGBA;
     }
+    if ( Surface->format->BytesPerPixel == 1 ) {
+        Mode = GL_RGB8;
+    }
     glTexImage2D( GL_TEXTURE_2D, 0, Mode, Surface->w, Surface->h, 0, Mode,
                   GL_UNSIGNED_BYTE, Surface->pixels );
     SDL_FreeSurface( Surface );

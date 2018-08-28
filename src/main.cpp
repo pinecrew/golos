@@ -3,6 +3,7 @@
 #include <GL/glu.h>
 #include <iostream>
 #include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 #include "draw.hpp"
 #include "math.hpp"
